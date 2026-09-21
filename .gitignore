@@ -1,0 +1,10 @@
+**/target/
+**/build-check.log
+classpath-check.log
+.repair-backup/
+
+.env
+.env.*
+*.log
+infra/k8s/secrets.env
+

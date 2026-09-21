@@ -1,0 +1,139 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "tempo",
+        "namespace": "ecommerce"
+      },
+      "spec": {
+        "replicas": 1,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "tempo"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "tempo"
+            }
+          },
+          "spec": {
+            "automountServiceAccountToken": false,
+            "containers": [
+              {
+                "name": "tempo",
+                "image": "grafana/tempo:2.7.2",
+                "env": [],
+                "args": [
+                  "-config.file=/etc/tempo.yaml"
+                ],
+                "ports": [
+                  {
+                    "containerPort": 3200
+                  },
+                  {
+                    "containerPort": 4318
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "config",
+                    "mountPath": "/etc/tempo.yaml",
+                    "subPath": "tempo.yaml",
+                    "readOnly": true
+                  },
+                  {
+                    "name": "data",
+                    "mountPath": "/var/tempo"
+                  }
+                ],
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "256Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "768Mi"
+                  }
+                }
+              }
+            ],
+            "volumes": [
+              {
+                "name": "config",
+                "configMap": {
+                  "name": "observability-config",
+                  "items": [
+                    {
+                      "key": "tempo.yaml",
+                      "path": "tempo.yaml"
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "data",
+                "persistentVolumeClaim": {
+                  "claimName": "tempo-data"
+                }
+              }
+            ],
+            "securityContext": {
+              "fsGroup": 10001
+            }
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "tempo",
+        "namespace": "ecommerce"
+      },
+      "spec": {
+        "selector": {
+          "app": "tempo"
+        },
+        "ports": [
+          {
+            "name": "p3200",
+            "port": 3200
+          },
+          {
+            "name": "p4318",
+            "port": 4318
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "PersistentVolumeClaim",
+      "metadata": {
+        "name": "tempo-data",
+        "namespace": "ecommerce"
+      },
+      "spec": {
+        "accessModes": [
+          "ReadWriteOnce"
+        ],
+        "resources": {
+          "requests": {
+            "storage": "5Gi"
+          }
+        }
+      }
+    }
+  ]
+}

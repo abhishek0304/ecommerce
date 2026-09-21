@@ -1,0 +1,420 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "user-db",
+        "namespace": "ecommerce",
+        "labels": {
+          "app": "user-db"
+        }
+      },
+      "spec": {
+        "clusterIP": "None",
+        "selector": {
+          "app": "user-db"
+        },
+        "ports": [
+          {
+            "name": "p3306",
+            "port": 3306,
+            "targetPort": 3306
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "StatefulSet",
+      "metadata": {
+        "name": "product-db",
+        "namespace": "ecommerce",
+        "labels": {
+          "app": "product-db"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "serviceName": "product-db",
+        "selector": {
+          "matchLabels": {
+            "app": "product-db"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "product-db"
+            }
+          },
+          "spec": {
+            "automountServiceAccountToken": false,
+            "containers": [
+              {
+                "name": "product-db",
+                "image": "mysql:8.4.4",
+                "imagePullPolicy": "IfNotPresent",
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "256Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "768Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "MYSQL_DATABASE",
+                    "value": "productdb"
+                  },
+                  {
+                    "name": "MYSQL_USER",
+                    "value": "product"
+                  },
+                  {
+                    "name": "MYSQL_PASSWORD",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-secrets",
+                        "key": "PRODUCT_DB_PASSWORD"
+                      }
+                    }
+                  },
+                  {
+                    "name": "MYSQL_ROOT_PASSWORD",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-secrets",
+                        "key": "PRODUCT_DB_PASSWORD"
+                      }
+                    }
+                  }
+                ],
+                "ports": [
+                  {
+                    "containerPort": 3306
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/var/lib/mysql"
+                  }
+                ],
+                "readinessProbe": {
+                  "exec": {
+                    "command": [
+                      "sh",
+                      "-c",
+                      "MYSQL_PWD=\"$MYSQL_PASSWORD\" mysql -h 127.0.0.1 -u\"$MYSQL_USER\" \"$MYSQL_DATABASE\" -e \"SELECT 1\""
+                    ]
+                  },
+                  "initialDelaySeconds": 30,
+                  "periodSeconds": 10
+                }
+              }
+            ]
+          }
+        },
+        "volumeClaimTemplates": [
+          {
+            "metadata": {
+              "name": "data"
+            },
+            "spec": {
+              "accessModes": [
+                "ReadWriteOnce"
+              ],
+              "resources": {
+                "requests": {
+                  "storage": "5Gi"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "product-db",
+        "namespace": "ecommerce",
+        "labels": {
+          "app": "product-db"
+        }
+      },
+      "spec": {
+        "clusterIP": "None",
+        "selector": {
+          "app": "product-db"
+        },
+        "ports": [
+          {
+            "name": "p3306",
+            "port": 3306,
+            "targetPort": 3306
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "StatefulSet",
+      "metadata": {
+        "name": "cart-db",
+        "namespace": "ecommerce",
+        "labels": {
+          "app": "cart-db"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "serviceName": "cart-db",
+        "selector": {
+          "matchLabels": {
+            "app": "cart-db"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "cart-db"
+            }
+          },
+          "spec": {
+            "automountServiceAccountToken": false,
+            "containers": [
+              {
+                "name": "cart-db",
+                "image": "mysql:8.4.4",
+                "imagePullPolicy": "IfNotPresent",
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "256Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "768Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "MYSQL_DATABASE",
+                    "value": "cartdb"
+                  },
+                  {
+                    "name": "MYSQL_USER",
+                    "value": "cart"
+                  },
+                  {
+                    "name": "MYSQL_PASSWORD",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-secrets",
+                        "key": "CART_DB_PASSWORD"
+                      }
+                    }
+                  },
+                  {
+                    "name": "MYSQL_ROOT_PASSWORD",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-secrets",
+                        "key": "CART_DB_PASSWORD"
+                      }
+                    }
+                  }
+                ],
+                "ports": [
+                  {
+                    "containerPort": 3306
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/var/lib/mysql"
+                  }
+                ],
+                "readinessProbe": {
+                  "exec": {
+                    "command": [
+                      "sh",
+                      "-c",
+                      "MYSQL_PWD=\"$MYSQL_PASSWORD\" mysql -h 127.0.0.1 -u\"$MYSQL_USER\" \"$MYSQL_DATABASE\" -e \"SELECT 1\""
+                    ]
+                  },
+                  "initialDelaySeconds": 30,
+                  "periodSeconds": 10
+                }
+              }
+            ]
+          }
+        },
+        "volumeClaimTemplates": [
+          {
+            "metadata": {
+              "name": "data"
+            },
+            "spec": {
+              "accessModes": [
+                "ReadWriteOnce"
+              ],
+              "resources": {
+                "requests": {
+                  "storage": "5Gi"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "cart-db",
+        "namespace": "ecommerce",
+        "labels": {
+          "app": "cart-db"
+        }
+      },
+      "spec": {
+        "clusterIP": "None",
+        "selector": {
+          "app": "cart-db"
+        },
+        "ports": [
+          {
+            "name": "p3306",
+            "port": 3306,
+            "targetPort": 3306
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "StatefulSet",
+      "metadata": {
+        "name": "order-db",
+        "namespace": "ecommerce",
+        "labels": {
+          "app": "order-db"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "serviceName": "order-db",
+        "selector": {
+          "matchLabels": {
+            "app": "order-db"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "order-db"
+            }
+          },
+          "spec": {
+            "automountServiceAccountToken": false,
+            "containers": [
+              {
+                "name": "order-db",
+                "image": "mysql:8.4.4",
+                "imagePullPolicy": "IfNotPresent",
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "256Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "768Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "MYSQL_DATABASE",
+                    "value": "orderdb"
+                  },
+                  {
+                    "name": "MYSQL_USER",
+                    "value": "order"
+                  },
+                  {
+                    "name": "MYSQL_PASSWORD",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-secrets",
+                        "key": "ORDER_DB_PASSWORD"
+                      }
+                    }
+                  },
+                  {
+                    "name": "MYSQL_ROOT_PASSWORD",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-secrets",
+                        "key": "ORDER_DB_PASSWORD"
+                      }
+                    }
+                  }
+                ],
+                "ports": [
+                  {
+                    "containerPort": 3306
+                  }
+                ],
+                "volumeMounts": [
+                  {
+                    "name": "data",
+                    "mountPath": "/var/lib/mysql"
+                  }
+                ],
+                "readinessProbe": {
+                  "exec": {
+                    "command": [
+                      "sh",
+                      "-c",
+                      "MYSQL_PWD=\"$MYSQL_PASSWORD\" mysql -h 127.0.0.1 -u\"$MYSQL_USER\" \"$MYSQL_DATABASE\" -e \"SELECT 1\""
+                    ]
+                  },
+                  "initialDelaySeconds": 30,
+                  "periodSeconds": 10
+                }
+              }
+            ]
+          }
+        },
+        "volumeClaimTemplates": [
+          {
+            "metadata": {
+              "name": "data"
+            },
+            "spec": {
+              "accessModes": [
+                "ReadWriteOnce"
+              ],
+              "resources": {
+                "requests": {
+                  "storage": "5Gi"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

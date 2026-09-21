@@ -1,0 +1,118 @@
+{
+  "name": "ecommerce-smoke",
+  "services": {
+    "database": {
+      "image": "mysql:8.4.4",
+      "environment": {
+        "MYSQL_DATABASE": "productdb",
+        "MYSQL_USER": "product",
+        "MYSQL_PASSWORD": "smoke-only",
+        "MYSQL_ROOT_PASSWORD": "smoke-root-only"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "MYSQL_PWD=smoke-only mysql -h 127.0.0.1 -uproduct productdb -e \"SELECT 1\""
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 40
+      }
+    },
+    "redis": {
+      "image": "redis:7.4.2-alpine",
+      "command": [
+        "redis-server",
+        "--requirepass",
+        "smoke-only"
+      ]
+    },
+    "product": {
+      "image": "ecommerce/product-service:local",
+      "environment": {
+        "SPRING_PROFILES_ACTIVE": "container",
+        "SPRING_DATASOURCE_URL": "jdbc:mysql://database:3306/productdb",
+        "SPRING_DATASOURCE_USERNAME": "product",
+        "SPRING_DATASOURCE_PASSWORD": "smoke-only",
+        "EUREKA_CLIENT_ENABLED": "false",
+        "REDIS_HOST": "redis",
+        "REDIS_PASSWORD": "smoke-only",
+        "PRODUCT_CACHE_ENABLED": "true",
+        "MANAGEMENT_TRACING_ENABLED": "false",
+        "SPRING_CLOUD_CONFIG_ENABLED": "false",
+        "CONFIG_SERVER_IMPORT": "classpath:/application-container.properties"
+      },
+      "ports": [
+        "127.0.0.1:18083:8083",
+        "127.0.0.1:19090:9090"
+      ],
+      "depends_on": {
+        "database": {
+          "condition": "service_healthy"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "curl",
+          "-fsS",
+          "http://localhost:9090/actuator/health/readiness"
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 40
+      }
+    },
+    "cart": {
+      "image": "ecommerce/cart-service:local",
+      "environment": {
+        "SPRING_PROFILES_ACTIVE": "container",
+        "SPRING_DATASOURCE_URL": "jdbc:mysql://cart-database:3306/cartdb",
+        "SPRING_DATASOURCE_USERNAME": "cart",
+        "SPRING_DATASOURCE_PASSWORD": "smoke-only",
+        "EUREKA_CLIENT_ENABLED": "false",
+        "PRODUCT_SERVICE_URL": "http://product:8083",
+        "MANAGEMENT_TRACING_ENABLED": "false",
+        "SPRING_CLOUD_CONFIG_ENABLED": "false",
+        "CONFIG_SERVER_IMPORT": "classpath:/application-container.properties"
+      },
+      "ports": [
+        "127.0.0.1:19091:9090"
+      ],
+      "depends_on": {
+        "cart-database": {
+          "condition": "service_healthy"
+        }
+      },
+      "healthcheck": {
+        "test": [
+          "CMD",
+          "curl",
+          "-fsS",
+          "http://localhost:9090/actuator/health/readiness"
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 40
+      }
+    },
+    "cart-database": {
+      "image": "mysql:8.4.4",
+      "environment": {
+        "MYSQL_DATABASE": "cartdb",
+        "MYSQL_USER": "cart",
+        "MYSQL_PASSWORD": "smoke-only",
+        "MYSQL_ROOT_PASSWORD": "smoke-root-only"
+      },
+      "healthcheck": {
+        "test": [
+          "CMD-SHELL",
+          "MYSQL_PWD=smoke-only mysql -h 127.0.0.1 -ucart cartdb -e \"SELECT 1\""
+        ],
+        "interval": "5s",
+        "timeout": "5s",
+        "retries": 40
+      }
+    }
+  }
+}

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#304b3e">
+  <title>Everyday — considered essentials</title>
+  <link rel="stylesheet" href="/store.css">
+  <script src="/store.js" defer></script>
+</head>
+<body>
+  <div class="announcement">A little more useful. A little more everyday.</div>
+  <header class="site-header">
+    <a class="brand" href="#shop" aria-label="Everyday home">everyday<span>®</span></a>
+    <nav aria-label="Main navigation">
+      <a href="#shop">Shop</a><a href="#wishlist">Saved</a><a href="#orders">Orders</a><a href="#messages">Messages</a>
+      <a href="#admin" id="admin-link" hidden>Admin</a>
+    </nav>
+    <div class="header-actions"><a id="account-link" href="#account">Sign in</a><a class="cart-link" href="#cart">Bag <span id="cart-count">0</span></a></div>
+  </header>
+  <main id="app" tabindex="-1"><p class="loading">Loading your store…</p></main>
+  <footer><a class="brand" href="#shop">everyday<span>®</span></a><p>Find your next everyday essential.</p><span>Prices in INR · Secure checkout</span></footer>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <dialog id="modal" aria-labelledby="modal-title"><button class="close" data-action="close" aria-label="Close dialog">×</button><div id="modal-content"></div></dialog>
+</body>
+</html>

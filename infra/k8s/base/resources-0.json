@@ -1,0 +1,502 @@
+{
+  "apiVersion": "v1",
+  "kind": "List",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "kind": "Namespace",
+      "metadata": {
+        "name": "ecommerce"
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "config-server",
+        "namespace": "ecommerce",
+        "labels": {
+          "app": "config-server"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "config-server"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "config-server"
+            }
+          },
+          "spec": {
+            "automountServiceAccountToken": false,
+            "securityContext": {
+              "fsGroup": 10001
+            },
+            "volumes": [],
+            "containers": [
+              {
+                "name": "config-server",
+                "image": "ecommerce/config-server:local",
+                "imagePullPolicy": "IfNotPresent",
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "256Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "768Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "SPRING_PROFILES_ACTIVE",
+                    "value": "container,native"
+                  },
+                  {
+                    "name": "KAFKA_BOOTSTRAP_SERVERS",
+                    "value": "kafka:19092"
+                  },
+                  {
+                    "name": "JWT_SECRET",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-secrets",
+                        "key": "JWT_SECRET"
+                      }
+                    }
+                  },
+                  {
+                    "name": "INTERNAL_SERVICE_KEY",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-secrets",
+                        "key": "INTERNAL_SERVICE_KEY"
+                      }
+                    }
+                  },
+                  {
+                    "name": "PRODUCT_SERVICE_URL",
+                    "value": "http://product-service:8083"
+                  },
+                  {
+                    "name": "CART_SERVICE_URL",
+                    "value": "http://cart-service:8084"
+                  },
+                  {
+                    "name": "USER_SERVICE_URL",
+                    "value": "http://user-service:8082"
+                  },
+                  {
+                    "name": "CONFIG_REPO_LOCATION",
+                    "value": "file:/config-repo/"
+                  },
+                  {
+                    "name": "SPRING_CLOUD_CONFIG_ENABLED",
+                    "value": "false"
+                  },
+                  {
+                    "name": "CONFIG_SERVER_IMPORT",
+                    "value": "classpath:/application-container.properties"
+                  }
+                ],
+                "ports": [
+                  {
+                    "containerPort": 8080
+                  },
+                  {
+                    "name": "management",
+                    "containerPort": 9090
+                  }
+                ],
+                "volumeMounts": [],
+                "securityContext": {
+                  "runAsNonRoot": true,
+                  "runAsUser": 10001,
+                  "allowPrivilegeEscalation": false,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                },
+                "startupProbe": {
+                  "httpGet": {
+                    "path": "/actuator/health/liveness",
+                    "port": 9090
+                  },
+                  "failureThreshold": 60,
+                  "periodSeconds": 5
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/actuator/health/liveness",
+                    "port": 9090
+                  },
+                  "periodSeconds": 20
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/actuator/health/readiness",
+                    "port": 9090
+                  },
+                  "periodSeconds": 10
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "config-server",
+        "namespace": "ecommerce",
+        "labels": {
+          "app": "config-server"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "config-server"
+        },
+        "ports": [
+          {
+            "name": "p8080",
+            "port": 8080,
+            "targetPort": 8080
+          },
+          {
+            "name": "p9090",
+            "port": 9090,
+            "targetPort": 9090
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "service-registry",
+        "namespace": "ecommerce",
+        "labels": {
+          "app": "service-registry"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "service-registry"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "service-registry"
+            }
+          },
+          "spec": {
+            "automountServiceAccountToken": false,
+            "securityContext": {
+              "fsGroup": 10001
+            },
+            "volumes": [],
+            "containers": [
+              {
+                "name": "service-registry",
+                "image": "ecommerce/service-registry:local",
+                "imagePullPolicy": "IfNotPresent",
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "256Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "768Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "SPRING_PROFILES_ACTIVE",
+                    "value": "container"
+                  },
+                  {
+                    "name": "KAFKA_BOOTSTRAP_SERVERS",
+                    "value": "kafka:19092"
+                  },
+                  {
+                    "name": "JWT_SECRET",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-secrets",
+                        "key": "JWT_SECRET"
+                      }
+                    }
+                  },
+                  {
+                    "name": "INTERNAL_SERVICE_KEY",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-secrets",
+                        "key": "INTERNAL_SERVICE_KEY"
+                      }
+                    }
+                  },
+                  {
+                    "name": "PRODUCT_SERVICE_URL",
+                    "value": "http://product-service:8083"
+                  },
+                  {
+                    "name": "CART_SERVICE_URL",
+                    "value": "http://cart-service:8084"
+                  },
+                  {
+                    "name": "USER_SERVICE_URL",
+                    "value": "http://user-service:8082"
+                  },
+                  {
+                    "name": "SPRING_CLOUD_CONFIG_ENABLED",
+                    "value": "false"
+                  },
+                  {
+                    "name": "CONFIG_SERVER_IMPORT",
+                    "value": "classpath:/application-container.properties"
+                  }
+                ],
+                "ports": [
+                  {
+                    "containerPort": 8761
+                  },
+                  {
+                    "name": "management",
+                    "containerPort": 9090
+                  }
+                ],
+                "volumeMounts": [],
+                "securityContext": {
+                  "runAsNonRoot": true,
+                  "runAsUser": 10001,
+                  "allowPrivilegeEscalation": false,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                },
+                "startupProbe": {
+                  "httpGet": {
+                    "path": "/actuator/health/liveness",
+                    "port": 9090
+                  },
+                  "failureThreshold": 60,
+                  "periodSeconds": 5
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/actuator/health/liveness",
+                    "port": 9090
+                  },
+                  "periodSeconds": 20
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/actuator/health/readiness",
+                    "port": 9090
+                  },
+                  "periodSeconds": 10
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "v1",
+      "kind": "Service",
+      "metadata": {
+        "name": "service-registry",
+        "namespace": "ecommerce",
+        "labels": {
+          "app": "service-registry"
+        }
+      },
+      "spec": {
+        "selector": {
+          "app": "service-registry"
+        },
+        "ports": [
+          {
+            "name": "p8761",
+            "port": 8761,
+            "targetPort": 8761
+          },
+          {
+            "name": "p9090",
+            "port": 9090,
+            "targetPort": 9090
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "apps/v1",
+      "kind": "Deployment",
+      "metadata": {
+        "name": "api-gateway",
+        "namespace": "ecommerce",
+        "labels": {
+          "app": "api-gateway"
+        }
+      },
+      "spec": {
+        "replicas": 1,
+        "strategy": {
+          "type": "Recreate"
+        },
+        "selector": {
+          "matchLabels": {
+            "app": "api-gateway"
+          }
+        },
+        "template": {
+          "metadata": {
+            "labels": {
+              "app": "api-gateway"
+            }
+          },
+          "spec": {
+            "automountServiceAccountToken": false,
+            "securityContext": {
+              "fsGroup": 10001
+            },
+            "volumes": [],
+            "containers": [
+              {
+                "name": "api-gateway",
+                "image": "ecommerce/api-gateway:local",
+                "imagePullPolicy": "IfNotPresent",
+                "resources": {
+                  "requests": {
+                    "cpu": "100m",
+                    "memory": "256Mi"
+                  },
+                  "limits": {
+                    "cpu": "1",
+                    "memory": "768Mi"
+                  }
+                },
+                "env": [
+                  {
+                    "name": "SPRING_PROFILES_ACTIVE",
+                    "value": "container"
+                  },
+                  {
+                    "name": "KAFKA_BOOTSTRAP_SERVERS",
+                    "value": "kafka:19092"
+                  },
+                  {
+                    "name": "JWT_SECRET",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-secrets",
+                        "key": "JWT_SECRET"
+                      }
+                    }
+                  },
+                  {
+                    "name": "INTERNAL_SERVICE_KEY",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-secrets",
+                        "key": "INTERNAL_SERVICE_KEY"
+                      }
+                    }
+                  },
+                  {
+                    "name": "PRODUCT_SERVICE_URL",
+                    "value": "http://product-service:8083"
+                  },
+                  {
+                    "name": "CART_SERVICE_URL",
+                    "value": "http://cart-service:8084"
+                  },
+                  {
+                    "name": "USER_SERVICE_URL",
+                    "value": "http://user-service:8082"
+                  },
+                  {
+                    "name": "SPRING_CLOUD_CONFIG_ENABLED",
+                    "value": "false"
+                  },
+                  {
+                    "name": "CONFIG_SERVER_IMPORT",
+                    "value": "classpath:/application-container.properties"
+                  }
+                ],
+                "ports": [
+                  {
+                    "containerPort": 8081
+                  },
+                  {
+                    "name": "management",
+                    "containerPort": 9090
+                  }
+                ],
+                "volumeMounts": [],
+                "securityContext": {
+                  "runAsNonRoot": true,
+                  "runAsUser": 10001,
+                  "allowPrivilegeEscalation": false,
+                  "capabilities": {
+                    "drop": [
+                      "ALL"
+                    ]
+                  }
+                },
+                "startupProbe": {
+                  "httpGet": {
+                    "path": "/actuator/health/liveness",
+                    "port": 9090
+                  },
+                  "failureThreshold": 60,
+                  "periodSeconds": 5
+                },
+                "livenessProbe": {
+                  "httpGet": {
+                    "path": "/actuator/health/liveness",
+                    "port": 9090
+                  },
+                  "periodSeconds": 20
+                },
+                "readinessProbe": {
+                  "httpGet": {
+                    "path": "/actuator/health/readiness",
+                    "port": 9090
+                  },
+                  "periodSeconds": 10
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}
