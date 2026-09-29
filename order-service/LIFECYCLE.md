@@ -138,9 +138,13 @@ Authorization: Bearer YOUR_ACCESS_TOKEN
 
 Through the gateway, use `http://localhost:8081/api/notifications`. A user can only view their own notifications.
 
-Updates cover confirmation, failure, pending/captured/collected payments, expiration, cancellation, refund progress, processing, shipping, and delivery. Shipping notifications include carrier and tracking information. Events exclude shipping addresses, credentials, and payment secrets.
+Updates cover confirmation, failure, pending/captured/collected payments, expiration, cancellation, refund progress, processing, shipping, delivery, and return requests, approvals, rejections, and receipt. Shipping notifications include carrier and tracking information. Events exclude shipping addresses, credentials, and payment secrets.
 
-This provides **in-app notifications**, not email or SMS delivery. Database failures keep Kafka messages unacknowledged so delivery can retry. Malformed events block their partition for inspection rather than being silently discarded; a future dead-letter workflow can handle those operational cases.
+This provides **in-app notifications** and queues email, SMS, and WhatsApp deliveries. External channels require [SMTP/Twilio configuration](../notification-service/PROVIDERS.md) and customer preferences. Database failures keep Kafka messages unacknowledged so delivery can retry. Malformed events block their partition for inspection rather than being silently discarded; a future dead-letter workflow can handle those operational cases.
+
+For each supported event, the inbox entry and three channel queue rows are persisted in one transaction. Duplicate event IDs do not enqueue additional deliveries. Unknown event types with a valid envelope are ignored for forward compatibility. Provider sending happens separately from Kafka consumption, so provider failures do not roll back the inbox. External delivery is not guaranteed exactly once: uncertain send outcomes are marked `UNKNOWN` for inspection instead of automatically resent.
+
+Customers can inspect channel delivery history through `GET /api/notifications/deliveries` and `GET /api/notifications/deliveries/{id}`. `ACCEPTED` means provider acceptance, not confirmed inbox or handset receipt; delivery-status callbacks are not implemented. Account verification and password-reset emails use a separate internal HTTP queue, not `order-events`. See the [Notification Service API and setup](../notification-service/README.md).
 
 ## Verification
 

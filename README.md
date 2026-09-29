@@ -4,6 +4,10 @@ HTTP clients use Spring Cloud OpenFeign. See [client configuration and migration
 
 # Ecommerce services
 
+## Postman API collection
+
+Import the [collection](docs/postman/Ecommerce.postman_collection.json) and [local environment](docs/postman/Ecommerce.local.postman_environment.json). The [run guide](docs/postman/README.md) explains the automated customer checkout/cancellation flow, optional admin shipping/return/refund flow, all service endpoints and sample responses, and provider prerequisites.
+
 ## Customer storefront and admin dashboard
 
 Open `http://localhost:8081/index.html` after starting the services. Product discovery and images, customer shopping pages, an admin dashboard, verified reviews, wishlists, coupons, and full-order returns are available. See [commerce setup, endpoints, and business rules](COMMERCE.md).

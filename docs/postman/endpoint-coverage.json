@@ -1,0 +1,458 @@
+[
+  {
+    "method": "POST",
+    "path": "/api/users/register",
+    "request": "REF User service | Register a customer",
+    "source": "UserController.register and UserService.register"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/login",
+    "request": "REF User service | Sign in",
+    "source": "AuthController.login and UserService.login"
+  },
+  {
+    "method": "POST",
+    "path": "/auth/login",
+    "request": "REF User service | Sign in (alias /auth/login)",
+    "source": "AuthController.login and UserService.login"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/refresh",
+    "request": "REF User service | Rotate a refresh token",
+    "source": "AuthController.refresh and UserService.refresh"
+  },
+  {
+    "method": "POST",
+    "path": "/auth/refresh",
+    "request": "REF User service | Rotate a refresh token (alias /auth/refresh)",
+    "source": "AuthController.refresh and UserService.refresh"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/forgot-password",
+    "request": "REF User service | Request password reset",
+    "source": "AuthController.forgot and UserService.forgot"
+  },
+  {
+    "method": "POST",
+    "path": "/auth/forgot-password",
+    "request": "REF User service | Request password reset (alias /auth/forgot-password)",
+    "source": "AuthController.forgot and UserService.forgot"
+  },
+  {
+    "method": "POST",
+    "path": "/forgot-password",
+    "request": "REF User service | Request password reset (alias /forgot-password)",
+    "source": "AuthController.forgot and UserService.forgot"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/reset-password",
+    "request": "REF User service | Reset a password using OTP",
+    "source": "AuthController.reset and UserService.reset"
+  },
+  {
+    "method": "POST",
+    "path": "/auth/reset-password",
+    "request": "REF User service | Reset a password using OTP (alias /auth/reset-password)",
+    "source": "AuthController.reset and UserService.reset"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/verify-email",
+    "request": "REF User service | Verify an email address",
+    "source": "AuthController.verify and UserService.verify"
+  },
+  {
+    "method": "POST",
+    "path": "/auth/verify-email",
+    "request": "REF User service | Verify an email address (alias /auth/verify-email)",
+    "source": "AuthController.verify and UserService.verify"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/logout",
+    "request": "REF User service | Sign out the supplied session",
+    "source": "SessionController.logout and UserService.logout"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/logout-all",
+    "request": "REF User service | Sign out all refresh sessions",
+    "source": "SessionController.logoutAll and UserService.logoutAll"
+  },
+  {
+    "method": "GET",
+    "path": "/api/users/me",
+    "request": "REF User service | Read your profile",
+    "source": "UserController.me and UserService.me"
+  },
+  {
+    "method": "GET",
+    "path": "/api/users/1",
+    "request": "REF User service | Read a profile by identifier",
+    "source": "UserController.get and UserService.get"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/users/me",
+    "request": "REF User service | Update your profile",
+    "source": "UserController.update and UserService.update"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/users/profile",
+    "request": "REF User service | Update your profile (alias /api/users/profile)",
+    "source": "UserController.update and UserService.update"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/users/change-password",
+    "request": "REF User service | Change your password",
+    "source": "UserController.password and UserService.changePassword"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/users/me",
+    "request": "REF User service | Delete your account",
+    "source": "UserController.delete and UserService.delete"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/users/1",
+    "request": "REF User service | Delete your account by identifier",
+    "source": "UserController.deleteById"
+  },
+  {
+    "method": "GET",
+    "path": "/api/addresses",
+    "request": "REF User service | List your addresses",
+    "source": "AddressController.list and AccountSettingsService.addresses"
+  },
+  {
+    "method": "POST",
+    "path": "/api/addresses",
+    "request": "REF User service | Add an address",
+    "source": "AddressController.add and AccountSettingsService.add"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/addresses/1",
+    "request": "REF User service | Update an address",
+    "source": "AddressController.update and AccountSettingsService.update"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/addresses/1",
+    "request": "REF User service | Remove an address",
+    "source": "AddressController.delete and AccountSettingsService.delete"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/addresses/1/default",
+    "request": "REF User service | Set a default address",
+    "source": "AddressController.defaultAddress and AccountSettingsService.makeDefault"
+  },
+  {
+    "method": "GET",
+    "path": "/api/users/preferences",
+    "request": "REF User service | Read preferences",
+    "source": "PreferencesController.get and AccountSettingsService.preferences"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/users/preferences",
+    "request": "REF User service | Update preferences",
+    "source": "PreferencesController.update and AccountSettingsService.updatePreferences"
+  },
+  {
+    "method": "GET",
+    "path": "/hello",
+    "request": "REF User service | Direct service greeting",
+    "source": "HealthController.hello"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/products?query=phone&category=Electronics&minPrice=100&maxPrice=2000&inStock=true&page=0&size=20&sort=price,asc",
+    "request": "REF Product service | Search the public catalog",
+    "source": "ProductController.getProducts and ProductSearch.search"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/products/1",
+    "request": "REF Product service | Read a product",
+    "source": "ProductController.getProduct and ProductServiceImpl.getProduct"
+  },
+  {
+    "method": "POST",
+    "path": "/api/v1/products",
+    "request": "REF Product service | Create a product",
+    "source": "ProductController.createProduct and ProductServiceImpl.createProduct"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/v1/products/1",
+    "request": "REF Product service | Replace product details",
+    "source": "ProductController.updateProduct and ProductServiceImpl.updateProduct"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/v1/products/1",
+    "request": "REF Product service | Delete an unreserved product",
+    "source": "ProductServiceImpl.deleteProduct and ReservationRepository.hasReservation"
+  },
+  {
+    "method": "GET",
+    "path": "/api/v1/products/admin/catalog?page=0&size=20",
+    "request": "REF Product service | List the admin catalog",
+    "source": "ProductController.adminCatalog and ProductSecurityConfig"
+  },
+  {
+    "method": "GET",
+    "path": "/api/cart",
+    "request": "REF Cart service | Read your cart",
+    "source": "CartController.get and CartService.get"
+  },
+  {
+    "method": "POST",
+    "path": "/api/cart/items",
+    "request": "REF Cart service | Add quantity to your cart",
+    "source": "CartController.add and CartService.add"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/cart/items/1",
+    "request": "REF Cart service | Set a cart line quantity",
+    "source": "CartController.update and CartService.update"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/cart/items/1",
+    "request": "REF Cart service | Remove one cart line",
+    "source": "CartController.remove and CartService.remove"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/cart",
+    "request": "REF Cart service | Empty your cart",
+    "source": "CartController.clear and CartService.clear"
+  },
+  {
+    "method": "POST",
+    "path": "/api/orders",
+    "request": "REF Order service | Create or resume checkout",
+    "source": "OrderController.create and OrderService.create"
+  },
+  {
+    "method": "GET",
+    "path": "/api/orders?page=0&size=20",
+    "request": "REF Order service | List your orders",
+    "source": "OrderController.list and OrderService.list"
+  },
+  {
+    "method": "GET",
+    "path": "/api/orders/11111111-1111-4111-8111-111111111111",
+    "request": "REF Order service | Read an owned order",
+    "source": "OrderController.get and OrderService.owned"
+  },
+  {
+    "method": "POST",
+    "path": "/api/orders/11111111-1111-4111-8111-111111111111/cancel",
+    "request": "REF Order service | Cancel an eligible order",
+    "source": "OrderController.cancel and OrderLifecycle.cancel"
+  },
+  {
+    "method": "POST",
+    "path": "/api/orders/11111111-1111-4111-8111-111111111111/payments/verify",
+    "request": "REF Order service | Verify a Razorpay browser callback",
+    "source": "OrderController.verify and OrderService.verify"
+  },
+  {
+    "method": "POST",
+    "path": "/api/payments/razorpay/webhook",
+    "request": "REF Order service | Receive a signed payment webhook",
+    "source": "PaymentWebhookController.webhook and OrderService.webhook"
+  },
+  {
+    "method": "GET",
+    "path": "/api/admin/orders?page=0&size=20",
+    "request": "REF Order service | List orders as an administrator",
+    "source": "AdminOrderController.list and OrderService.adminList"
+  },
+  {
+    "method": "GET",
+    "path": "/api/admin/orders/11111111-1111-4111-8111-111111111111",
+    "request": "REF Order service | Read any order as an administrator",
+    "source": "AdminOrderController.get and OrderService.adminGet"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/admin/orders/11111111-1111-4111-8111-111111111111/status",
+    "request": "REF Order service | Advance order fulfillment",
+    "source": "AdminOrderController.fulfill and OrderLifecycle.fulfill"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/orders/11111111-1111-4111-8111-111111111111/refund/retry",
+    "request": "REF Order service | Retry a failed online refund",
+    "source": "AdminOrderController.retryRefund and OrderLifecycle.retryRefund"
+  },
+  {
+    "method": "GET",
+    "path": "/api/reviews/products/1?page=0&size=10",
+    "request": "REF Reviews and wishlist | Read public product reviews",
+    "source": "ShoppingController.reviews and ShoppingService.reviews"
+  },
+  {
+    "method": "POST",
+    "path": "/api/orders/11111111-1111-4111-8111-111111111111/reviews",
+    "request": "REF Reviews and wishlist | Review a delivered purchase",
+    "source": "ShoppingController.review and ShoppingService.review"
+  },
+  {
+    "method": "GET",
+    "path": "/api/wishlist?page=0&size=20",
+    "request": "REF Reviews and wishlist | Read saved products",
+    "source": "ShoppingController.wishlist and ShoppingService.wishlist"
+  },
+  {
+    "method": "PUT",
+    "path": "/api/wishlist/1",
+    "request": "REF Reviews and wishlist | Save a product",
+    "source": "ShoppingController.save and ShoppingService.save"
+  },
+  {
+    "method": "DELETE",
+    "path": "/api/wishlist/1",
+    "request": "REF Reviews and wishlist | Remove a saved product",
+    "source": "ShoppingController.remove and ShoppingService.remove"
+  },
+  {
+    "method": "POST",
+    "path": "/api/coupons/quote",
+    "request": "REF Coupons | Estimate a coupon discount",
+    "source": "CouponController.quote and CouponService.quote"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/coupons",
+    "request": "REF Coupons | Create a discount rule",
+    "source": "CouponController.create and CouponService.create"
+  },
+  {
+    "method": "GET",
+    "path": "/api/admin/coupons?page=0&size=20",
+    "request": "REF Coupons | List discount rules",
+    "source": "CouponController.list and CouponService.list"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/admin/coupons/SAVE10",
+    "request": "REF Coupons | Activate or deactivate a rule",
+    "source": "CouponController.active and CouponService.setActive"
+  },
+  {
+    "method": "POST",
+    "path": "/api/orders/11111111-1111-4111-8111-111111111111/returns",
+    "request": "REF Returns | Request a full order return",
+    "source": "ReturnController.request and OrderLifecycle.requestReturn"
+  },
+  {
+    "method": "PATCH",
+    "path": "/api/admin/orders/11111111-1111-4111-8111-111111111111/return",
+    "request": "REF Returns | Approve or reject a return",
+    "source": "ReturnController.decide and OrderLifecycle.decideReturn"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/orders/11111111-1111-4111-8111-111111111111/return/receive",
+    "request": "REF Returns | Record receipt and inventory disposition",
+    "source": "ReturnController.receive and OrderLifecycle.startReceiveReturn receiveReturn"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/orders/11111111-1111-4111-8111-111111111111/refund/manual",
+    "request": "REF Returns | Record a completed COD refund",
+    "source": "ReturnController.manual and OrderLifecycle.manualRefund"
+  },
+  {
+    "method": "GET",
+    "path": "/api/notifications?page=0&size=20",
+    "request": "REF Notification service | Read your notification inbox",
+    "source": "NotificationController.list and NotificationRepository"
+  },
+  {
+    "method": "GET",
+    "path": "/internal/carts/1",
+    "request": "REF Internal APIs | Fetch a checkout cart snapshot",
+    "source": "CheckoutCartController.snapshot"
+  },
+  {
+    "method": "POST",
+    "path": "/internal/carts/1/consume",
+    "request": "REF Internal APIs | Consume only a matching cart version",
+    "source": "CheckoutCartController.consume"
+  },
+  {
+    "method": "PUT",
+    "path": "/internal/inventory/reservations/11111111-1111-4111-8111-111111111111",
+    "request": "REF Internal APIs | Reserve stock for an order",
+    "source": "InventoryController.reserve and InventoryService.reserve"
+  },
+  {
+    "method": "DELETE",
+    "path": "/internal/inventory/reservations/11111111-1111-4111-8111-111111111111",
+    "request": "REF Internal APIs | Release reserved stock",
+    "source": "InventoryController.release and InventoryService.release"
+  },
+  {
+    "method": "POST",
+    "path": "/internal/inventory/reservations/11111111-1111-4111-8111-111111111111/commit",
+    "request": "REF Internal APIs | Commit shipped inventory",
+    "source": "InventoryController.commit and InventoryService.commit"
+  },
+  {
+    "method": "POST",
+    "path": "/internal/inventory/reservations/11111111-1111-4111-8111-111111111111/return",
+    "request": "REF Internal APIs | Apply the return stock decision",
+    "source": "InventoryController.receiveReturn and InventoryService.receiveReturn"
+  },
+  {
+    "method": "POST",
+    "path": "/api/auth/resend-verification",
+    "request": "REF User service | Resend email verification",
+    "source": "AuthController.resend"
+  },
+  {
+    "method": "POST",
+    "path": "/auth/resend-verification",
+    "request": "REF User service | Resend email verification (alias /auth/resend-verification)",
+    "source": "AuthController.resend"
+  },
+  {
+    "method": "GET",
+    "path": "/api/notifications/deliveries?page=0&size=20",
+    "request": "REF Notification service | List external deliveries",
+    "source": "DeliveryController.list"
+  },
+  {
+    "method": "GET",
+    "path": "/api/notifications/deliveries/{{deliveryId}}",
+    "request": "REF Notification service | Read external delivery",
+    "source": "DeliveryController.get"
+  },
+  {
+    "method": "GET",
+    "path": "/internal/users/1/contact",
+    "request": "REF Internal APIs | Read customer contact and preferences",
+    "source": "ContactController.get"
+  },
+  {
+    "method": "PUT",
+    "path": "/internal/messages/{{messageId}}",
+    "request": "REF Internal APIs | Queue an account email",
+    "source": "DeliveryController.send"
+  }
+]
