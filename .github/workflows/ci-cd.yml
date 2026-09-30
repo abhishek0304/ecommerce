@@ -17,6 +17,19 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      migration-mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: disposable-ci-only
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pdisposable-ci-only"
+          --health-interval=10s --health-timeout=5s --health-retries=20
+    env:
+      MIGRATION_MYSQL_URL: jdbc:mysql://127.0.0.1:3306/
+      MYSQL_USER: root
+      MYSQL_PWD: disposable-ci-only
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -26,6 +39,19 @@ jobs:
           cache: maven
       - name: Service tests
         run: bash mvnw -B verify
+      - name: Install MySQL backup clients
+        run: sudo apt-get update && sudo apt-get install -y mysql-client
+      - name: Load checker failure-path tests
+        run: python3 scripts/test-operations-tools.py
+      - name: Isolated schema backup and restore drill
+        run: python3 scripts/verify-mysql-operations.py
+      - name: Real catalog load and restart drill
+        run: python3 scripts/verify-local-capacity.py
+      - name: Validate monitoring rules and timing
+        run: |
+          docker run --rm --entrypoint promtool -v "$PWD/infra/monitoring:/etc/prometheus:ro" prom/prometheus:v3.5.0 check config /etc/prometheus/prometheus.yml
+          docker run --rm --entrypoint promtool -v "$PWD/infra/monitoring:/etc/prometheus:ro" prom/prometheus:v3.5.0 test rules /etc/prometheus/alerts.test.yml
+          docker run --rm --entrypoint amtool -v "$PWD/infra/monitoring:/etc/alertmanager:ro" prom/alertmanager:v0.28.1 check-config /etc/alertmanager/alertmanager.yml
       - name: Validate deployment consistency
         run: python3 scripts/validate-infra.py
       - uses: azure/setup-kubectl@v4
@@ -44,7 +70,10 @@ jobs:
         if: always()
         with:
           name: test-reports
-          path: '**/target/surefire-reports/*.xml'
+          path: |
+            **/target/surefire-reports/*.xml
+            .deployment-evidence/*.json
+          include-hidden-files: true
   smoke:
     needs: test
     runs-on: ubuntu-latest

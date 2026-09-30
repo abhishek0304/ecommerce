@@ -18,7 +18,7 @@ Notification Service runs on **8086**. Keep Kafka running (`docker compose up -d
 
 Order and Notification Services create the `order-events` topic with three partitions and one replica for local development. Use the same `KAFKA_BOOTSTRAP_SERVERS` on both services. The order API can continue during a Kafka outage: pending updates stay in `order_event_outbox` until publishing succeeds.
 
-New tables and columns are added by the project's existing Hibernate `ddl-auto=update` setting. No existing orders are deleted. Existing unpaid online orders receive a deadline based on their original creation time and may expire on the first recovery run.
+Flyway manages schema changes and Hibernate validates the result. Populated databases require explicit reviewed baseline adoption; see [operations](../docs/OPERATIONS.md). No migration here deletes existing orders. Existing unpaid online orders receive a deadline based on their original creation time and may expire on the first recovery run.
 
 ## Payment expiration
 

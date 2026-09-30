@@ -49,6 +49,7 @@
                   "pm.environment.set('reservationId', pm.variables.replaceIn('{{$guid}}'));",
                   "pm.environment.set('messageExpiresAt', new Date(Date.now()+600000).toISOString());",
                   "pm.environment.set('couponExpiresAt', new Date(Date.now()+86400000).toISOString());",
+                  "pm.environment.set('pickupDate', new Date(Date.now()+86400000).toISOString().slice(0,10));",
                   "}"
                 ]
               }
@@ -4294,6 +4295,494 @@
       ]
     },
     {
+      "name": "Reference — Shipping",
+      "description": "Order-service carrier booking, tracking refresh/polling, pickup and labels for Shiprocket and Delhivery. MOCK default never contacts providers. See order-service/SHIPPING.md for real account configuration and reconciliation limits.",
+      "item": [
+        {
+          "id": "e869a6ad-6d39-5cd9-9e40-a174471484bc",
+          "name": "REF Shipping | Book a carrier shipment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/orders/{{orderId}}/shipments/{{shipmentDirection}}",
+            "description": "Direction FORWARD or RETURN. Forward requires CONFIRMED/PROCESSING and captured online payment; reverse requires a DELIVERED order and APPROVED return. Indian domestic, one package, same HSN for all items. Address/prices come from the order snapshot. Repeating identical details returns the saved attempt; changed provider/details return 409. Inspect status: HTTP 200 with UNKNOWN/BOOKING is not confirmed booking. MOCK creates no external shipment; Delhivery supports STAGING. Shiprocket requires explicit LIVE mode and opt-in. Provider booking blocks customer cancellation pending carrier reconciliation.\n\nAccess: Bearer token with ROLE_ADMIN.\n\nExpected errors: Validation/authentication and dependency errors depend on request state.\n\nImplementation: ShippingController.book and ShippingService.book.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"{{shippingProvider}}\",\n  \"recipientName\": \"{{shippingRecipientName}}\",\n  \"recipientPhone\": \"{{shippingRecipientPhone}}\",\n  \"recipientEmail\": \"{{shippingRecipientEmail}}\",\n  \"weightKg\": 0.5,\n  \"lengthCm\": 10,\n  \"breadthCm\": 10,\n  \"heightCm\": 10,\n  \"hsn\": \"1234\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.environment.get('referenceRequest') !== pm.info.requestName) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const allowed = [200];",
+                  "pm.test('Expected HTTP status: ' + allowed.join('/'), () => pm.expect(pm.response.code).to.be.oneOf(allowed));",
+                  "if (!allowed.includes(pm.response.code)) { pm.execution.setNextRequest(null); }",
+                  "else {",
+                  "",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 — illustrative example",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/admin/orders/{{orderId}}/shipments/{{shipmentDirection}}",
+                "description": "Direction FORWARD or RETURN. Forward requires CONFIRMED/PROCESSING and captured online payment; reverse requires a DELIVERED order and APPROVED return. Indian domestic, one package, same HSN for all items. Address/prices come from the order snapshot. Repeating identical details returns the saved attempt; changed provider/details return 409. Inspect status: HTTP 200 with UNKNOWN/BOOKING is not confirmed booking. MOCK creates no external shipment; Delhivery supports STAGING. Shiprocket requires explicit LIVE mode and opt-in. Provider booking blocks customer cancellation pending carrier reconciliation.\n\nAccess: Bearer token with ROLE_ADMIN.\n\nExpected errors: Validation/authentication and dependency errors depend on request state.\n\nImplementation: ShippingController.book and ShippingService.book.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminAccessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"provider\": \"{{shippingProvider}}\",\n  \"recipientName\": \"{{shippingRecipientName}}\",\n  \"recipientPhone\": \"{{shippingRecipientPhone}}\",\n  \"recipientEmail\": \"{{shippingRecipientEmail}}\",\n  \"weightKg\": 0.5,\n  \"lengthCm\": 10,\n  \"breadthCm\": 10,\n  \"heightCm\": 10,\n  \"hsn\": \"1234\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"orderId\": \"11111111-1111-4111-8111-111111111111\",\n  \"direction\": \"FORWARD\",\n  \"provider\": \"SHIPROCKET\",\n  \"mode\": \"MOCK\",\n  \"status\": \"BOOKED\",\n  \"providerOrderId\": \"MOCK-example\",\n  \"shipmentId\": \"MOCK-example\",\n  \"awb\": \"MOCK-example\",\n  \"carrier\": \"SHIPROCKET SIMULATED\",\n  \"trackingStatus\": null,\n  \"trackedAt\": null,\n  \"failure\": null,\n  \"pickupStatus\": null\n}"
+            }
+          ]
+        },
+        {
+          "id": "f3c42ed3-a010-51ad-b7d6-7c735872aba2",
+          "name": "REF Shipping | Read order shipments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/orders/{{orderId}}/shipments",
+            "description": "Order owner or administrator; foreign orders return 404. Includes mode, booking status, carrier/AWB, latest polled tracking state and pickup state. No recipient contact details or credentials returned.\n\nAccess: Bearer access token.\n\nExpected errors: Validation/authentication and dependency errors depend on request state.\n\nImplementation: ShippingController.list.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{accessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.environment.get('referenceRequest') !== pm.info.requestName) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const allowed = [200];",
+                  "pm.test('Expected HTTP status: ' + allowed.join('/'), () => pm.expect(pm.response.code).to.be.oneOf(allowed));",
+                  "if (!allowed.includes(pm.response.code)) { pm.execution.setNextRequest(null); }",
+                  "else {",
+                  "",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 — illustrative example",
+              "originalRequest": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/orders/{{orderId}}/shipments",
+                "description": "Order owner or administrator; foreign orders return 404. Includes mode, booking status, carrier/AWB, latest polled tracking state and pickup state. No recipient contact details or credentials returned.\n\nAccess: Bearer access token.\n\nExpected errors: Validation/authentication and dependency errors depend on request state.\n\nImplementation: ShippingController.list.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{accessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "[\n  {\n    \"orderId\": \"11111111-1111-4111-8111-111111111111\",\n    \"direction\": \"FORWARD\",\n    \"provider\": \"SHIPROCKET\",\n    \"mode\": \"MOCK\",\n    \"status\": \"BOOKED\",\n    \"providerOrderId\": \"MOCK-example\",\n    \"shipmentId\": \"MOCK-example\",\n    \"awb\": \"MOCK-example\",\n    \"carrier\": \"SHIPROCKET SIMULATED\",\n    \"trackingStatus\": null,\n    \"trackedAt\": null,\n    \"failure\": null,\n    \"pickupStatus\": null\n  }\n]"
+            }
+          ]
+        },
+        {
+          "id": "a5724e97-fffd-5cea-acf8-db3dee12ff24",
+          "name": "REF Shipping | Refresh carrier tracking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/orders/{{orderId}}/shipments/{{shipmentDirection}}/tracking",
+            "description": "Requires BOOKED shipment. Fetches provider state; 502 on unavailable or mismatched tracking. Does not collect COD payment, advance fulfillment, inspect a return or issue a refund. Optional scheduled polling is configured on the server.\n\nAccess: Bearer token with ROLE_ADMIN.\n\nExpected errors: Validation/authentication and dependency errors depend on request state.\n\nImplementation: ShippingController.tracking.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.environment.get('referenceRequest') !== pm.info.requestName) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const allowed = [200];",
+                  "pm.test('Expected HTTP status: ' + allowed.join('/'), () => pm.expect(pm.response.code).to.be.oneOf(allowed));",
+                  "if (!allowed.includes(pm.response.code)) { pm.execution.setNextRequest(null); }",
+                  "else {",
+                  "",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 — illustrative example",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/admin/orders/{{orderId}}/shipments/{{shipmentDirection}}/tracking",
+                "description": "Requires BOOKED shipment. Fetches provider state; 502 on unavailable or mismatched tracking. Does not collect COD payment, advance fulfillment, inspect a return or issue a refund. Optional scheduled polling is configured on the server.\n\nAccess: Bearer token with ROLE_ADMIN.\n\nExpected errors: Validation/authentication and dependency errors depend on request state.\n\nImplementation: ShippingController.tracking.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminAccessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"orderId\": \"11111111-1111-4111-8111-111111111111\",\n  \"direction\": \"FORWARD\",\n  \"provider\": \"SHIPROCKET\",\n  \"mode\": \"MOCK\",\n  \"status\": \"BOOKED\",\n  \"providerOrderId\": \"MOCK-example\",\n  \"shipmentId\": \"MOCK-example\",\n  \"awb\": \"MOCK-example\",\n  \"carrier\": \"SHIPROCKET SIMULATED\",\n  \"trackingStatus\": \"SIMULATED_BOOKED\",\n  \"trackedAt\": \"2026-09-15T10:00:00Z\",\n  \"failure\": null,\n  \"pickupStatus\": null\n}"
+            }
+          ]
+        },
+        {
+          "id": "4bd1d32e-1de8-5de7-8e12-9844db58ffd5",
+          "name": "REF Shipping | Get carrier label",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/orders/{{orderId}}/shipments/{{shipmentDirection}}/label",
+            "description": "Requires BOOKED shipment. MOCK returns no valid label. Shiprocket can return HTTPS PDF URLs. Delhivery reverse pickups return NOT_REQUIRED: no packing slip is required. Delhivery forward label expects a provider PDF link. 502 if the provider cannot provide the requested label.\n\nAccess: Bearer token with ROLE_ADMIN.\n\nExpected errors: Validation/authentication and dependency errors depend on request state.\n\nImplementation: ShippingController.label.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.environment.get('referenceRequest') !== pm.info.requestName) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const allowed = [200];",
+                  "pm.test('Expected HTTP status: ' + allowed.join('/'), () => pm.expect(pm.response.code).to.be.oneOf(allowed));",
+                  "if (!allowed.includes(pm.response.code)) { pm.execution.setNextRequest(null); }",
+                  "else {",
+                  "",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 — illustrative example",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/admin/orders/{{orderId}}/shipments/{{shipmentDirection}}/label",
+                "description": "Requires BOOKED shipment. MOCK returns no valid label. Shiprocket can return HTTPS PDF URLs. Delhivery reverse pickups return NOT_REQUIRED: no packing slip is required. Delhivery forward label expects a provider PDF link. 502 if the provider cannot provide the requested label.\n\nAccess: Bearer token with ROLE_ADMIN.\n\nExpected errors: Validation/authentication and dependency errors depend on request state.\n\nImplementation: ShippingController.label.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminAccessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"SIMULATED\",\n  \"url\": null,\n  \"note\": \"TEST ONLY — no carrier-valid label is issued in MOCK mode\"\n}"
+            }
+          ]
+        },
+        {
+          "id": "b491dbcb-7b4d-585b-983e-0fc0028a6364",
+          "name": "REF Shipping | Request carrier pickup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/admin/orders/{{orderId}}/shipments/{{shipmentDirection}}/pickup",
+            "description": "Requires BOOKED shipment. Date is today/future and time HH:mm:ss (India). Delhivery forward uses the requested slot for one package at its registered warehouse; reverse pickup is automatic. Shiprocket selects its slot. Repeated identical request is not resent, including UNKNOWN outcomes. HTTP success does not confirm physical collection.\n\nAccess: Bearer token with ROLE_ADMIN.\n\nExpected errors: Validation/authentication and dependency errors depend on request state.\n\nImplementation: ShippingController.pickup.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{adminAccessToken}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"{{pickupDate}}\",\n  \"time\": \"12:00:00\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.environment.get('referenceRequest') !== pm.info.requestName) { pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const allowed = [200];",
+                  "pm.test('Expected HTTP status: ' + allowed.join('/'), () => pm.expect(pm.response.code).to.be.oneOf(allowed));",
+                  "if (!allowed.includes(pm.response.code)) { pm.execution.setNextRequest(null); }",
+                  "else {",
+                  "",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "response": [
+            {
+              "name": "200 — illustrative example",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Accept",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{baseUrl}}/api/admin/orders/{{orderId}}/shipments/{{shipmentDirection}}/pickup",
+                "description": "Requires BOOKED shipment. Date is today/future and time HH:mm:ss (India). Delhivery forward uses the requested slot for one package at its registered warehouse; reverse pickup is automatic. Shiprocket selects its slot. Repeated identical request is not resent, including UNKNOWN outcomes. HTTP success does not confirm physical collection.\n\nAccess: Bearer token with ROLE_ADMIN.\n\nExpected errors: Validation/authentication and dependency errors depend on request state.\n\nImplementation: ShippingController.pickup.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{adminAccessToken}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"date\": \"{{pickupDate}}\",\n  \"time\": \"12:00:00\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"orderId\": \"11111111-1111-4111-8111-111111111111\",\n  \"direction\": \"FORWARD\",\n  \"provider\": \"SHIPROCKET\",\n  \"mode\": \"MOCK\",\n  \"status\": \"BOOKED\",\n  \"providerOrderId\": \"MOCK-example\",\n  \"shipmentId\": \"MOCK-example\",\n  \"awb\": \"MOCK-example\",\n  \"carrier\": \"SHIPROCKET SIMULATED\",\n  \"trackingStatus\": null,\n  \"trackedAt\": null,\n  \"failure\": null,\n  \"pickupStatus\": \"SIMULATED\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Reference — User service",
       "description": "Accounts, login/refresh sessions, passwords, email verification, profiles, addresses and notification preferences. Port 8082; owns userdb.",
       "item": [
@@ -5706,7 +6195,7 @@
               }
             ],
             "url": "{{baseUrl}}/api/users/{{userId}}",
-            "description": "Path template is /api/users/{id}. IMPORTANT CURRENT BEHAVIOR: any authenticated user can call this endpoint for another ID. Neither ownership nor ROLE_ADMIN is checked. The response includes email and phone; restrict or remove this endpoint before public production use.\n\nAccess: Bearer access token.\n\nExpected errors: 401 unauthenticated; 400 user not found.\n\nImplementation: UserController.get and UserService.get.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
+            "description": "Path template is /api/users/{id}. The authenticated customer may read only their own profile. ROLE_ADMIN may read another profile. Ownership is checked before fetching the requested target, so foreign and nonexistent IDs both return 403 to non-admin callers.\n\nAccess: Bearer access token.\n\nExpected errors: 401 unauthenticated; 403 non-owner without ROLE_ADMIN; 400 user not found for an authorized lookup.\n\nImplementation: UserController.get and UserService.get.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -5755,7 +6244,7 @@
                   }
                 ],
                 "url": "{{baseUrl}}/api/users/{{userId}}",
-                "description": "Path template is /api/users/{id}. IMPORTANT CURRENT BEHAVIOR: any authenticated user can call this endpoint for another ID. Neither ownership nor ROLE_ADMIN is checked. The response includes email and phone; restrict or remove this endpoint before public production use.\n\nAccess: Bearer access token.\n\nExpected errors: 401 unauthenticated; 400 user not found.\n\nImplementation: UserController.get and UserService.get.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
+                "description": "Path template is /api/users/{id}. The authenticated customer may read only their own profile. ROLE_ADMIN may read another profile. Ownership is checked before fetching the requested target, so foreign and nonexistent IDs both return 403 to non-admin callers.\n\nAccess: Bearer access token.\n\nExpected errors: 401 unauthenticated; 403 non-owner without ROLE_ADMIN; 400 user not found for an authorized lookup.\n\nImplementation: UserController.get and UserService.get.\n\nTo send this reference request, set referenceRequest to this request's exact name. Populate its IDs and credentials first. Incompatible lifecycle operations are intentionally not run as one sequence.\n\nSaved responses are illustrative examples derived from code, not captured live responses.",
                 "auth": {
                   "type": "bearer",
                   "bearer": [

@@ -18,8 +18,8 @@ public class PurchaseOrder {
     @Column(nullable = false) public String paymentMethod;
     @Column(nullable = false) public String status = "CREATING";
     @Column(nullable = false) public String paymentStatus = "UNPAID";
-    @Lob @Column(nullable = false) public String addressJson;
-    @Lob @Column(nullable = false) public String cartJson;
+    @Lob @Column(nullable = false, columnDefinition = "longtext") public String addressJson;
+    @Lob @Column(nullable = false, columnDefinition = "longtext") public String cartJson;
     @Lob public String itemsJson;
     @Column(precision = 19, scale = 2) public BigDecimal total;
     @Column(precision = 19, scale = 2) public BigDecimal subtotal;
@@ -49,6 +49,7 @@ public class PurchaseOrder {
     public String razorpayRefundId;
     public String refundFailure;
     public String carrier;
+    @Column(columnDefinition = "boolean default false") public boolean providerShipmentRequested;
     public String trackingNumber;
     public Instant shippedAt;
     public Instant deliveredAt;

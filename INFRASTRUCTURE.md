@@ -1,5 +1,7 @@
 # Ecommerce infrastructure
 
+For the production deployment prerequisites, secret contract and live verification procedure, see [Production deployment handoff](docs/PRODUCTION-DEPLOYMENT.md). Existing development manifests do not establish a live production deployment.
+
 The project includes eight Spring services, separate MySQL databases, Kafka, Redis,
 circuit breakers, Docker, Kubernetes, CI/CD, and OpenTelemetry tracing with Tempo and a local Grafana UI.
 Actuator health checks and structured console logs remain available.
@@ -108,8 +110,8 @@ Logs are still console-only; Grafana is configured for traces, not centralized l
 Do not put credentials, request bodies, addresses, or payment details in span tags.
 
 The order outbox adds nullable `trace_parent` (256) and `trace_state` (512) columns.
-The current Hibernate `ddl-auto=update` setup adds these automatically; deployments
-using managed migrations must add both VARCHAR columns before starting the new version.
+The Flyway V1 baseline includes these columns. Existing databases must follow the
+reviewed adoption procedure in [operations](docs/OPERATIONS.md) before rollout.
 Existing rows without context still publish. Background order recovery can start a new
 trace; use the order ID to correlate business work across separate recovery attempts.
 Kubernetes keeps its existing Tempo collector; the Grafana UI here is Docker-only.
@@ -175,7 +177,6 @@ docker compose --profile app --profile observability down
 ```
 
 Do not add -v unless you intend to delete database/tracing data.
-Previously created monitoring data volumes are retained but no longer referenced by Compose.
+Prometheus and Alertmanager use dedicated persistent volumes; do not delete them during a routine restart.
 
-This is a development deployment. Production needs TLS, secret management, migrations
-instead of ddl-auto=update, backups/restore tests, and appropriate database/Kafka topology.
+This is a development deployment. Versioned migrations and local operations drills now exist; production still needs TLS, secret management, backup scheduling/off-host retention, recovery drills at representative scale, and appropriate database/Kafka topology. See [operations](docs/OPERATIONS.md).

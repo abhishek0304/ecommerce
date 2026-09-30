@@ -7,7 +7,7 @@ public class OutboxEvent {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY) public Long id;
     @Column(nullable = false, unique = true) public String eventId;
     @Column(nullable = false) public String orderId;
-    @Lob @Column(nullable = false) public String payload;
+    @Lob @Column(nullable = false, columnDefinition = "longtext") public String payload;
     @Column(nullable = false) public Instant createdAt = Instant.now();
     public Instant publishedAt;
     @Column(length = 256) public String traceParent;

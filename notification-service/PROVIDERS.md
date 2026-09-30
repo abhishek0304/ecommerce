@@ -1,6 +1,27 @@
 # SMTP and Twilio delivery
 
-Copy missing keys from `providers.env.example` into the root `.env`. Keep real credentials only in that ignored file or your deployment secret store. `scripts/init-env.ps1` includes the template for new installations. Docker Compose forwards these settings to notification-service. Spring Boot launched from an IDE does not automatically load `.env`: configure the same environment variables in its run configuration. Kubernetes deployments must supply them through their own Secret/environment configuration.
+Copy missing keys from `providers.env.example` into the root `.env`. Keep real credentials only in that ignored file or your deployment secret store. `scripts/init-env.ps1` includes the template for new installations. Docker Compose forwards these settings to notification-service. Spring Boot launched from an IDE does not automatically load `.env`: configure the same environment variables in its run configuration. Kubernetes wiring is described below.
+
+## Kubernetes provider configuration
+
+The base and observability overlay now wire all 16 settings from `providers.env.example` to notification-service using individual keys from Secret `ecommerce-notification-providers`. Other services do not receive those provider credentials. References are optional so installations without the Secret retain disabled-channel defaults; enabling a channel still requires its complete provider configuration.
+
+Create the deployment namespace first. Populate an ignored `.env.notification-production` file with only the provider template keys, using the selected environment's credentials and flags, or have the production secret manager materialize the same named Secret. Never copy the full application `.env` into this provider Secret.
+
+```powershell
+kubectl -n ecommerce create secret generic ecommerce-notification-providers --from-env-file=.env.notification-production
+kubectl apply -k infra/k8s/base
+kubectl -n ecommerce rollout restart deployment/notification-service
+kubectl -n ecommerce rollout status deployment/notification-service --timeout=300s
+```
+
+For an existing Secret, update it through your secret manager or a secure administrator workflow; `create` deliberately fails rather than silently replacing it. Restart the deployment after changing Secret-backed environment variables. Both overlays use the same wiring. These commands require a configured cluster and do not establish actual provider delivery. SMTP usernames/passwords, enabled flags and non-secret SMTP settings all belong to this single configuration unit; default false flags are not forced over a supplied Secret.
+
+## Test credentials versus actual receipt
+
+[Twilio test credentials](https://www.twilio.com/docs/iam/test-credentials) validate simulated requests but do not send to real phones, create real message logs, or prove handset delivery. The sandbox diagnostic is `scripts/test-sms.ps1 -TestMode -Recipient +COUNTRYCODE...`; it uses **separate** `TWILIO_TEST_ACCOUNT_SID` and `TWILIO_TEST_AUTH_TOKEN` entries in the ignored root `.env` and a Twilio magic sender. It never falls back to live credentials and does not poll a simulated message SID. These diagnostic keys are not injected into the application deployment.
+
+Actual SMS receipt requires explicitly using the normal configured account/sender and an authorized test recipient; a trial account can impose destination restrictions. SMTP has no universal sandbox switch: use a local capture server for simulation, or send an explicitly authorized test email to verify a real inbox. Provider acceptance and simulated success must not be reported as actual recipient delivery.
 
 ## Email
 

@@ -2,6 +2,8 @@
 
 Runs on **8085**, registers with Eureka, and stores orders in **orderdb**.
 
+Shiprocket/Delhivery booking, pickup, tracking and return handling are documented in [Shipping integration](SHIPPING.md). Shipping defaults to explicit local simulation; provider credentials and account verification are separate from payments.
+
 ## Start
 
 Create the database in MySQL:

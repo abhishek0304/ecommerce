@@ -28,6 +28,30 @@ class UserRegressionTests {
     @Autowired com.ecommerce.user_service.service.AccountSettingsService settings;
     @Autowired AddressRepository addresses;
     @Autowired VerificationTokenRepository verifications;
+    @Autowired com.ecommerce.user_service.util.JwtService jwt;
+
+    @Test
+    void profileLookupRequiresAuthenticationAndOwnershipOrAdmin() throws Exception {
+        User owner = newUser();
+        User other = newUser();
+        String ownerToken = "Bearer " + jwt.accessToken(owner);
+        mvc.perform(get("/api/users/" + owner.getId())).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/users/" + owner.getId()).header("Authorization", "Bearer invalid"))
+                .andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/users/" + owner.getId()).header("Authorization", ownerToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("email").value(owner.getEmail()));
+        mvc.perform(get("/api/users/" + other.getId()).header("Authorization", ownerToken))
+                .andExpect(status().isForbidden()).andExpect(jsonPath("email").doesNotExist())
+                .andExpect(jsonPath("phone").doesNotExist());
+        // Reject before looking up the target, including IDs that do not exist.
+        mvc.perform(get("/api/users/" + Long.MAX_VALUE).header("Authorization", ownerToken))
+                .andExpect(status().isForbidden());
+        other.getRoles().add(new Role(RoleName.ROLE_ADMIN));
+        mvc.perform(get("/api/users/" + owner.getId()).header("Authorization", "Bearer " + jwt.accessToken(other)))
+                .andExpect(status().isOk()).andExpect(jsonPath("email").value(owner.getEmail()));
+        mvc.perform(get("/api/users/me").header("Authorization", ownerToken))
+                .andExpect(status().isOk()).andExpect(jsonPath("id").value(owner.getId()));
+    }
 
     private User newUser() {
         User user = new User();

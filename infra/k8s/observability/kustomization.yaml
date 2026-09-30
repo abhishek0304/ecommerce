@@ -4,7 +4,8 @@
   "namespace": "ecommerce",
   "resources": [
     "../base",
-    "resources.json"
+    "resources.json",
+    "../../monitoring"
   ],
   "configMapGenerator": [
     {

@@ -87,3 +87,5 @@ See [expiration, refunds, fulfillment, and Kafka notifications](order-service/LI
 Product creation (`POST /api/v1/products`), editing (`PUT /api/v1/products/{id}`), and deletion (`DELETE /api/v1/products/{id}`) require a user-service access token containing `ROLE_ADMIN`. Set the same `JWT_SECRET` in user-service and product-service. Missing, invalid, or expired credentials return 401; valid customer tokens return 403. Product GET/HEAD requests remain public so product browsing and cart price lookup continue to work.
 
 After restarting product-service, log in as a user who has the admin role and send `Authorization: Bearer YOUR_ACCESS_TOKEN` in Postman. Log in again after changing roles to obtain a fresh token. Internal inventory operations still require `X-Service-Key`; that key does not grant product administration privileges.
+
+Database upgrades, backup/restore verification, monitoring, recovery procedures and bounded load drills: [Operations runbook](docs/OPERATIONS.md). Existing populated databases require explicit baseline adoption before deploying the Flyway release.

@@ -1,0 +1,28 @@
+-- Baseline of the application schema. Do not edit after deployment.
+create table account_message_outbox (attempts integer not null, expires_at datetime(6), next_attempt_at datetime(6), user_id bigint, recipient varchar(320), body varchar(2000), id varchar(255) not null, status varchar(255), subject varchar(255), primary key (id)) engine=InnoDB;
+create table addresses (default_address bit not null, created_date datetime(6) not null, id bigint not null auto_increment, updated_date datetime(6) not null, user_id bigint not null, city varchar(255) not null, country varchar(255) not null, created_by varchar(255), line1 varchar(255) not null, line2 varchar(255), postal_code varchar(255) not null, state varchar(255) not null, updated_by varchar(255), primary key (id)) engine=InnoDB;
+create table device_sessions (active bit not null, id bigint not null auto_increment, last_active datetime(6), user_id bigint not null, device varchar(255), session_id varchar(255) not null, primary key (id)) engine=InnoDB;
+create table email_verification_tokens (used bit not null, expires_at datetime(6) not null, id bigint not null auto_increment, user_id bigint not null, otp varchar(128) not null, primary key (id)) engine=InnoDB;
+create table login_history (successful bit not null, id bigint not null auto_increment, login_at datetime(6), user_id bigint not null, device varchar(255), ip_address varchar(255), primary key (id)) engine=InnoDB;
+create table password_reset_tokens (used bit not null, expires_at datetime(6) not null, id bigint not null auto_increment, user_id bigint not null, otp varchar(128) not null, primary key (id)) engine=InnoDB;
+create table refresh_tokens (revoked bit not null, expires_at datetime(6) not null, id bigint not null auto_increment, user_id bigint not null, token varchar(100) not null, device varchar(255), primary key (id)) engine=InnoDB;
+create table roles (id bigint not null auto_increment, name enum ('ROLE_ADMIN','ROLE_DELIVERY_PARTNER','ROLE_USER','ROLE_VENDOR') not null, primary key (id)) engine=InnoDB;
+create table user_preferences (dark_mode bit not null, email_notifications bit not null, push_notifications bit not null, sms_notifications bit not null, whats_app_notifications bit not null, id bigint not null auto_increment, user_id bigint not null, communication_preference varchar(255), currency varchar(255), language varchar(255), primary key (id)) engine=InnoDB;
+create table user_roles (role_id bigint not null, user_id bigint not null, primary key (role_id, user_id)) engine=InnoDB;
+create table users (active bit not null, dob date, email_verified bit not null, failed_login_attempts integer not null, login_count integer not null, phone_verified bit not null, created_date datetime(6) not null, id bigint not null auto_increment, last_login datetime(6), locked_until datetime(6), password_changed_on datetime(6), updated_date datetime(6) not null, phone varchar(30) not null, name varchar(100) not null, email varchar(254) not null, created_by varchar(255), gender varchar(255), password varchar(255) not null, profile_image varchar(255), updated_by varchar(255), status enum ('ACTIVE','BLOCKED','DELETED','LOCKED','SUSPENDED') not null, primary key (id)) engine=InnoDB;
+create index IDX1ly0nvfyt7xcsokvv71x1w1fm on account_message_outbox (status, next_attempt_at);
+alter table device_sessions add constraint UKikcpghu37ta2oeb2ws1lwflgs unique (session_id);
+alter table refresh_tokens add constraint UKghpmfn23vmxfu3spu3lfg4r2d unique (token);
+alter table roles add constraint UKofx66keruapi6vyqpv6f2or37 unique (name);
+alter table user_preferences add constraint UKqy8dkrkc8b34dcgwoq2km43rd unique (user_id);
+alter table users add constraint UKdu5v5sr43g5bfnji4vb8hg5s3 unique (phone);
+alter table users add constraint UK6dotkott2kjsp8vw4d0m25fb7 unique (email);
+alter table addresses add constraint FK1fa36y2oqhao3wgg2rw1pi459 foreign key (user_id) references users (id);
+alter table device_sessions add constraint FKmaf4t03km2fav72pabwnggdns foreign key (user_id) references users (id);
+alter table email_verification_tokens add constraint FKi1c4mmamlb8keqt74k4lrtwhc foreign key (user_id) references users (id);
+alter table login_history add constraint FK20v0mimmdegh2afs39uixlxpm foreign key (user_id) references users (id);
+alter table password_reset_tokens add constraint FKk3ndxg5xp6v7wd4gjyusp15gq foreign key (user_id) references users (id);
+alter table refresh_tokens add constraint FK1lih5y2npsf8u5o3vhdb9y0os foreign key (user_id) references users (id);
+alter table user_preferences add constraint FKepakpib0qnm82vmaiismkqf88 foreign key (user_id) references users (id);
+alter table user_roles add constraint FKh8ciramu9cc9q3qcqiv4ue8a6 foreign key (role_id) references roles (id);
+alter table user_roles add constraint FKhfh9dx7w3ubf1co1vdev94g3f foreign key (user_id) references users (id);

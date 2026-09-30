@@ -528,7 +528,25 @@
         "SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE": "1",
         "TRACING_SAMPLE_RATE": "${TRACING_SAMPLE_RATE:-1.0}",
         "MANAGEMENT_TRACING_ENABLED": "${MANAGEMENT_TRACING_ENABLED:-true}",
-        "OTLP_TRACES_ENDPOINT": "${OTLP_TRACES_ENDPOINT:-http://tempo:4318/v1/traces}"
+        "OTLP_TRACES_ENDPOINT": "${OTLP_TRACES_ENDPOINT:-http://tempo:4318/v1/traces}",
+        "SHIPPING_MODE": "${SHIPPING_MODE:-MOCK}",
+        "SHIPPING_LIVE_ENABLED": "${SHIPPING_LIVE_ENABLED:-false}",
+        "SHIPPING_TRACKING_ENABLED": "${SHIPPING_TRACKING_ENABLED:-false}",
+        "SHIPROCKET_TOKEN": "${SHIPROCKET_TOKEN:-}",
+        "SHIPROCKET_PICKUP_LOCATION": "${SHIPROCKET_PICKUP_LOCATION:-}",
+        "SHIPROCKET_CHANNEL_ID": "${SHIPROCKET_CHANNEL_ID:-}",
+        "DELHIVERY_TOKEN": "${DELHIVERY_TOKEN:-}",
+        "DELHIVERY_BASE_URL": "${DELHIVERY_BASE_URL:-https://staging-express.delhivery.com}",
+        "DELHIVERY_PICKUP_LOCATION": "${DELHIVERY_PICKUP_LOCATION:-}",
+        "DELHIVERY_CLIENT_NAME": "${DELHIVERY_CLIENT_NAME:-}",
+        "SHIPPING_WAREHOUSE_NAME": "${SHIPPING_WAREHOUSE_NAME:-}",
+        "SHIPPING_WAREHOUSE_PHONE": "${SHIPPING_WAREHOUSE_PHONE:-}",
+        "SHIPPING_WAREHOUSE_EMAIL": "${SHIPPING_WAREHOUSE_EMAIL:-}",
+        "SHIPPING_WAREHOUSE_ADDRESS": "${SHIPPING_WAREHOUSE_ADDRESS:-}",
+        "SHIPPING_WAREHOUSE_CITY": "${SHIPPING_WAREHOUSE_CITY:-}",
+        "SHIPPING_WAREHOUSE_STATE": "${SHIPPING_WAREHOUSE_STATE:-}",
+        "SHIPPING_WAREHOUSE_PINCODE": "${SHIPPING_WAREHOUSE_PINCODE:-}",
+        "SHIPPING_WAREHOUSE_GSTIN": "${SHIPPING_WAREHOUSE_GSTIN:-}"
       },
       "depends_on": {
         "service-registry": {
@@ -701,6 +719,62 @@
       ],
       "restart": "unless-stopped",
       "mem_limit": "256m"
+    },
+    "prometheus": {
+      "image": "prom/prometheus:v3.5.0",
+      "profiles": [
+        "observability"
+      ],
+      "command": [
+        "--config.file=/etc/prometheus/prometheus.yml",
+        "--storage.tsdb.retention.time=15d"
+      ],
+      "volumes": [
+        "./infra/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro",
+        "./infra/monitoring/alerts.yml:/etc/prometheus/alerts.yml:ro",
+        "prometheus-data:/prometheus"
+      ],
+      "ports": [
+        "127.0.0.1:9091:9090"
+      ],
+      "restart": "unless-stopped",
+      "mem_limit": "512m"
+    },
+    "alertmanager": {
+      "image": "prom/alertmanager:v0.28.1",
+      "profiles": [
+        "observability"
+      ],
+      "command": [
+        "--config.file=/etc/alertmanager/alertmanager.yml"
+      ],
+      "volumes": [
+        "./infra/monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro",
+        "alertmanager-data:/alertmanager"
+      ],
+      "ports": [
+        "127.0.0.1:9093:9093"
+      ],
+      "restart": "unless-stopped",
+      "mem_limit": "128m"
+    },
+    "alert-receiver": {
+      "image": "python:3.13-alpine",
+      "profiles": [
+        "observability"
+      ],
+      "command": [
+        "python",
+        "/app/alert-receiver.py"
+      ],
+      "volumes": [
+        "./infra/monitoring/alert-receiver.py:/app/alert-receiver.py:ro"
+      ],
+      "ports": [
+        "127.0.0.1:9094:8080"
+      ],
+      "restart": "unless-stopped",
+      "mem_limit": "64m"
     }
   },
   "volumes": {
@@ -710,6 +784,8 @@
     "order-db": {},
     "notification-db": {},
     "kafka-data": {},
-    "tempo-data": {}
+    "tempo-data": {},
+    "prometheus-data": {},
+    "alertmanager-data": {}
   }
 }

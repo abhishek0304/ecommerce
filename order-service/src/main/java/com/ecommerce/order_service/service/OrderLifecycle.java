@@ -60,6 +60,8 @@ public class OrderLifecycle {
             PurchaseOrder order = lock(id);
             if (!order.userId.equals(userId)) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found");
             if (closed(order) || order.status.equals("FAILED")) return;
+            if (order.providerShipmentRequested)
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Carrier booking exists or is uncertain; reconcile it before cancellation");
             if (!Set.of("CREATING", "RESERVED", "PENDING_PAYMENT", "CONFIRMED", "PROCESSING").contains(order.status))
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Shipped or delivered orders cannot be cancelled");
             close(order, "CANCELLED");
@@ -204,6 +206,9 @@ public class OrderLifecycle {
             if (order.paymentMethod.equals("RAZORPAY") && !order.paymentStatus.equals("PAID"))
                 throw new ResponseStatusException(HttpStatus.CONFLICT, "Online payment must be captured before fulfillment");
             if (target.equals("SHIPPED")) {
+                if (order.providerShipmentRequested && (order.trackingNumber == null
+                        || !Objects.equals(order.carrier, request.carrier()) || !Objects.equals(order.trackingNumber, request.trackingNumber())))
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Use the completed carrier booking details");
                 if (request.carrier() == null || request.carrier().isBlank() || request.trackingNumber() == null || request.trackingNumber().isBlank())
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Carrier and trackingNumber are required");
                 order.carrier = request.carrier(); order.trackingNumber = request.trackingNumber(); order.shippedAt = Instant.now();

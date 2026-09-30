@@ -59,5 +59,5 @@ assert not referenced-set(env), f'Undefined environment variables: {referenced-s
 for key,value in env.items():
     if any(word in key.lower() for word in ['token','signature','servicekey','otp']): assert not value, f'Secret default: {key}'
 assert env['enableAdminFlow']=='false' and env['referenceRequest']==''
-assert len(items)==141 and len(actual)==76
+assert len(items)==146 and len(actual)==81
 print(f'PASS: {len(actual)} current controller routes/aliases fully covered; {len(items)} requests with examples; all request variables declared; no embedded credentials.')

@@ -1,6 +1,7 @@
 param(
     [Parameter(Mandatory=$true)][string]$Recipient,
-    [string]$Message = 'Ecommerce SMS verification: this is your requested test message. No action is required.'
+    [string]$Message = 'Ecommerce SMS verification: this is your requested test message. No action is required.',
+    [switch]$TestMode
 )
 $ErrorActionPreference = 'Stop'
 $settings = @{}
@@ -9,19 +10,25 @@ foreach ($line in Get-Content -LiteralPath (Join-Path $PSScriptRoot '../.env')) 
         $settings[$matches[1]] = $matches[2].Trim().Trim('"').Trim("'")
     }
 }
-$account = $settings['TWILIO_ACCOUNT_SID']
-if ($account -cnotmatch '^AC[0-9a-fA-F]{32}$' -or [string]::IsNullOrWhiteSpace($settings['TWILIO_AUTH_TOKEN'])) { throw 'Missing or invalid Twilio credentials.' }
-if ($Recipient -notmatch '^\+[1-9][0-9]{6,14}$' -or $settings['TWILIO_SMS_FROM'] -notmatch '^\+[1-9][0-9]{6,14}$') { throw 'Use international phone numbers.' }
-$authorization = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($account + ':' + $settings['TWILIO_AUTH_TOKEN']))
+$account = if ($TestMode) { $settings['TWILIO_TEST_ACCOUNT_SID'] } else { $settings['TWILIO_ACCOUNT_SID'] }
+$token = if ($TestMode) { $settings['TWILIO_TEST_AUTH_TOKEN'] } else { $settings['TWILIO_AUTH_TOKEN'] }
+$sender = if ($TestMode) { '+15005550006' } else { $settings['TWILIO_SMS_FROM'] }
+if ($account -cnotmatch '^AC[0-9a-fA-F]{32}$' -or [string]::IsNullOrWhiteSpace($token)) { throw 'Missing or invalid Twilio credentials for the selected mode. TestMode requires TWILIO_TEST_ACCOUNT_SID and TWILIO_TEST_AUTH_TOKEN; no live fallback.' }
+if ($Recipient -notmatch '^\+[1-9][0-9]{6,14}$' -or $sender -notmatch '^\+[1-9][0-9]{6,14}$') { throw 'Use international phone numbers.' }
+$authorization = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes($account + ':' + $token))
 $headers = @{Authorization = 'Basic ' + $authorization}
 $uri = "https://api.twilio.com/2010-04-01/Accounts/$account/Messages.json"
 try {
     $result = Invoke-RestMethod -Uri $uri -Method Post -Headers $headers -ContentType 'application/x-www-form-urlencoded' -Body @{
-        From = $settings['TWILIO_SMS_FROM']; To = $Recipient
+        From = $sender; To = $Recipient
         Body = $Message
     } -TimeoutSec 20
     Write-Output ('Twilio accepted request. Status: ' + $result.status)
     if ($result.sid -cnotmatch '^SM[0-9a-fA-F]{32}$') { throw 'Unexpected message identifier.' }
+    if ($TestMode) {
+        Write-Output 'SIMULATED_ACCEPTANCE: Twilio test credentials do not deliver to a phone. No live receipt verified.'
+        return
+    }
     # Only read status after submission; never automatically repeat a send.
     for ($i=0; $i -lt 4; $i++) {
         Start-Sleep -Seconds 5

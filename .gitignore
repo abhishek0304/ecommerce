@@ -7,4 +7,8 @@ classpath-check.log
 .env.*
 *.log
 infra/k8s/secrets.env
+.deployment-evidence/
 
+
+.tools/
+.backups/

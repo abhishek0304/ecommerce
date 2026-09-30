@@ -11,6 +11,7 @@ $lines = foreach ($name in $names) {
 }
 $lines += @('RAZORPAY_KEY_ID=','RAZORPAY_KEY_SECRET=','RAZORPAY_WEBHOOK_SECRET=')
 $lines += Get-Content (Join-Path $PSScriptRoot '../notification-service/providers.env.example')
+$lines += Get-Content (Join-Path $PSScriptRoot '../order-service/shipping.env.example')
 [IO.File]::WriteAllLines($destination, $lines)
 Write-Host 'Created .env with random local credentials. Add Razorpay test keys for online checkout.'
 

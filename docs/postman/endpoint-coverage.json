@@ -454,5 +454,35 @@
     "path": "/internal/messages/{{messageId}}",
     "request": "REF Internal APIs | Queue an account email",
     "source": "DeliveryController.send"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/orders/11111111-1111-4111-8111-111111111111/shipments/{{shipmentDirection}}",
+    "request": "REF Shipping | Book a carrier shipment",
+    "source": "ShippingController.book and ShippingService.book"
+  },
+  {
+    "method": "GET",
+    "path": "/api/orders/11111111-1111-4111-8111-111111111111/shipments",
+    "request": "REF Shipping | Read order shipments",
+    "source": "ShippingController.list"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/orders/11111111-1111-4111-8111-111111111111/shipments/{{shipmentDirection}}/tracking",
+    "request": "REF Shipping | Refresh carrier tracking",
+    "source": "ShippingController.tracking"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/orders/11111111-1111-4111-8111-111111111111/shipments/{{shipmentDirection}}/label",
+    "request": "REF Shipping | Get carrier label",
+    "source": "ShippingController.label"
+  },
+  {
+    "method": "POST",
+    "path": "/api/admin/orders/11111111-1111-4111-8111-111111111111/shipments/{{shipmentDirection}}/pickup",
+    "request": "REF Shipping | Request carrier pickup",
+    "source": "ShippingController.pickup"
   }
 ]

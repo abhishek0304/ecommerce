@@ -2,7 +2,7 @@
 
 The customer storefront and admin dashboard are bundled in api-gateway. Rebuild and restart product-service, cart-service, order-service, notification-service, and api-gateway, then open **http://localhost:8081/index.html**. No Node build or separate frontend server is required. Existing authentication, carts, addresses, and payments are used through the gateway.
 
-For Docker installations, use the normal project startup workflow in `INFRASTRUCTURE.md` to rebuild the services. For IDE installations, rebuild with `./mvnw.cmd clean verify` and restart those five services. Existing MySQL data is retained; the configured Hibernate `ddl-auto=update` adds the new tables/columns. Deployments that disable automatic schema updates must provision these changes before starting the new code.
+For Docker installations, use the normal project startup workflow in `INFRASTRUCTURE.md` to rebuild the services. For IDE installations, rebuild with `./mvnw.cmd clean verify` and restart those five services. Flyway now owns schema changes and Hibernate validates them. Existing populated databases require the reviewed baseline procedure in [operations](docs/OPERATIONS.md) before starting the new code; no automatic baseline is enabled.
 
 ## Customer journey
 
@@ -67,7 +67,7 @@ Checkout accepts `{"addressId":1,"paymentMethod":"CASH_ON_DELIVERY","couponCode"
 - Returns cover **all items in an order**, requested within **30 days of delivery**, one request per order. A return request does not immediately refund or restock anything. Admin approval, then physical receipt, are required. Rejected requests cannot be received.
 - At receipt, admins choose whether all units are resalable. Restocking/discarding is idempotent at product-service and the decision cannot be changed on retry. Inventory outages leave a durable `RETURN_RECEIVING` state for the existing recovery worker.
 - Online refunds reuse the existing Razorpay refund machinery and refund the discounted amount actually paid. COD refunds require an external payment by the store; recording its reference marks it refunded. The application does not initiate bank transfers for COD refunds.
-- Return events use the existing outbox/Kafka notification pipeline. Carrier integration, automatic return labels, partial item returns/refunds, and moderation/editing of reviews are not included in this initial implementation.
+- Return events use the existing outbox/Kafka notification pipeline. Shiprocket and Delhivery booking, tracking, pickup and applicable label APIs are described in [the shipping guide](order-service/SHIPPING.md); external provider verification remains required. Carrier cancellation/reconciliation, partial item returns/refunds, and moderation/editing of reviews are not implemented.
 
 ## Verification
 

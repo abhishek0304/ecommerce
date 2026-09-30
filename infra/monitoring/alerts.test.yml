@@ -1,0 +1,198 @@
+{
+  "rule_files": [
+    "alerts.yml"
+  ],
+  "evaluation_interval": "1m",
+  "tests": [
+    {
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "up{job=\"ecommerce\",instance=\"order-service:9090\",application=\"order-service\"}",
+          "values": "1 0 0 0 1 1"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "1m",
+          "alertname": "EcommerceServiceDown",
+          "exp_alerts": []
+        },
+        {
+          "eval_time": "3m",
+          "alertname": "EcommerceServiceDown",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "severity": "critical",
+                "job": "ecommerce",
+                "instance": "order-service:9090",
+                "application": "order-service"
+              },
+              "exp_annotations": {
+                "summary": "Service scrape is failing; inspect readiness and dependencies"
+              }
+            }
+          ]
+        },
+        {
+          "eval_time": "5m",
+          "alertname": "EcommerceServiceDown",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "ecommerce_operations_stale{queue=\"shipping\",application=\"order-service\"}",
+          "values": "1 1 1 1 1 1 0 0"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "5m",
+          "alertname": "EcommerceStalledWork",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "severity": "warning",
+                "queue": "shipping",
+                "application": "order-service"
+              },
+              "exp_annotations": {
+                "summary": "Background work older than 15 minutes needs recovery inspection"
+              }
+            }
+          ]
+        },
+        {
+          "eval_time": "7m",
+          "alertname": "EcommerceStalledWork",
+          "exp_alerts": []
+        }
+      ]
+    },
+    {
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "http_server_requests_seconds_count{application=\"drill\",status=\"500\"}",
+          "values": "0+10x20"
+        },
+        {
+          "series": "http_server_requests_seconds_count{application=\"drill\",status=\"200\"}",
+          "values": "0+90x20"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "15m",
+          "alertname": "EcommerceHttpErrors",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "application": "drill",
+                "severity": "critical"
+              },
+              "exp_annotations": {
+                "summary": "HTTP server error ratio exceeds 5%; inspect traces before retrying writes"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "http_server_requests_seconds_bucket{application=\"drill\",le=\"0.5\"}",
+          "values": "0+10x20"
+        },
+        {
+          "series": "http_server_requests_seconds_bucket{application=\"drill\",le=\"2\"}",
+          "values": "0+100x20"
+        },
+        {
+          "series": "http_server_requests_seconds_bucket{application=\"drill\",le=\"+Inf\"}",
+          "values": "0+100x20"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "15m",
+          "alertname": "EcommerceHttpLatency",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "application": "drill",
+                "severity": "warning"
+              },
+              "exp_annotations": {
+                "summary": "HTTP p95 exceeds one second; inspect pools and downstream latency"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "ecommerce_operations_collection_age_seconds{application=\"drill\"}",
+          "values": "180+0x20"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "15m",
+          "alertname": "EcommerceMetricsCollectorStale",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "application": "drill",
+                "severity": "critical"
+              },
+              "exp_annotations": {
+                "summary": "Database queue metrics have stopped refreshing"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "interval": "1m",
+      "input_series": [
+        {
+          "series": "jvm_memory_used_bytes{application=\"drill\",area=\"heap\"}",
+          "values": "90+0x20"
+        },
+        {
+          "series": "jvm_memory_max_bytes{application=\"drill\",area=\"heap\"}",
+          "values": "100+0x20"
+        }
+      ],
+      "alert_rule_test": [
+        {
+          "eval_time": "15m",
+          "alertname": "EcommerceHeapPressure",
+          "exp_alerts": [
+            {
+              "exp_labels": {
+                "application": "drill",
+                "severity": "warning"
+              },
+              "exp_annotations": {
+                "summary": "JVM heap usage exceeds 85%; inspect load and GC"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

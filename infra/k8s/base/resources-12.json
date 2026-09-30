@@ -167,6 +167,186 @@
                   {
                     "name": "CONFIG_SERVER_IMPORT",
                     "value": "classpath:/application-container.properties"
+                  },
+                  {
+                    "name": "SHIPPING_MODE",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPPING_MODE",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPPING_LIVE_ENABLED",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPPING_LIVE_ENABLED",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPPING_TRACKING_ENABLED",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPPING_TRACKING_ENABLED",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPROCKET_TOKEN",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPROCKET_TOKEN",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPROCKET_PICKUP_LOCATION",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPROCKET_PICKUP_LOCATION",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPROCKET_CHANNEL_ID",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPROCKET_CHANNEL_ID",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "DELHIVERY_TOKEN",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "DELHIVERY_TOKEN",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "DELHIVERY_BASE_URL",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "DELHIVERY_BASE_URL",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "DELHIVERY_PICKUP_LOCATION",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "DELHIVERY_PICKUP_LOCATION",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "DELHIVERY_CLIENT_NAME",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "DELHIVERY_CLIENT_NAME",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPPING_WAREHOUSE_NAME",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPPING_WAREHOUSE_NAME",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPPING_WAREHOUSE_PHONE",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPPING_WAREHOUSE_PHONE",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPPING_WAREHOUSE_EMAIL",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPPING_WAREHOUSE_EMAIL",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPPING_WAREHOUSE_ADDRESS",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPPING_WAREHOUSE_ADDRESS",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPPING_WAREHOUSE_CITY",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPPING_WAREHOUSE_CITY",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPPING_WAREHOUSE_STATE",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPPING_WAREHOUSE_STATE",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPPING_WAREHOUSE_PINCODE",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPPING_WAREHOUSE_PINCODE",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SHIPPING_WAREHOUSE_GSTIN",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-shipping-providers",
+                        "key": "SHIPPING_WAREHOUSE_GSTIN",
+                        "optional": true
+                      }
+                    }
                   }
                 ],
                 "ports": [
@@ -355,6 +535,166 @@
                   {
                     "name": "CONFIG_SERVER_IMPORT",
                     "value": "classpath:/application-container.properties"
+                  },
+                  {
+                    "name": "EMAIL_ENABLED",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "EMAIL_ENABLED",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "EMAIL_FROM",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "EMAIL_FROM",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SMTP_HOST",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "SMTP_HOST",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SMTP_PORT",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "SMTP_PORT",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SMTP_USERNAME",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "SMTP_USERNAME",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SMTP_PASSWORD",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "SMTP_PASSWORD",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SMTP_AUTH",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "SMTP_AUTH",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SMTP_STARTTLS",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "SMTP_STARTTLS",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SMTP_SSL",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "SMTP_SSL",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "SMS_ENABLED",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "SMS_ENABLED",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "TWILIO_ACCOUNT_SID",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "TWILIO_ACCOUNT_SID",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "TWILIO_AUTH_TOKEN",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "TWILIO_AUTH_TOKEN",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "TWILIO_SMS_FROM",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "TWILIO_SMS_FROM",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "WHATSAPP_ENABLED",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "WHATSAPP_ENABLED",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "TWILIO_WHATSAPP_FROM",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "TWILIO_WHATSAPP_FROM",
+                        "optional": true
+                      }
+                    }
+                  },
+                  {
+                    "name": "TWILIO_WHATSAPP_CONTENT_SID",
+                    "valueFrom": {
+                      "secretKeyRef": {
+                        "name": "ecommerce-notification-providers",
+                        "key": "TWILIO_WHATSAPP_CONTENT_SID",
+                        "optional": true
+                      }
+                    }
                   }
                 ],
                 "ports": [
