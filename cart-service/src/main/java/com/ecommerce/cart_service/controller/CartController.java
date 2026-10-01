@@ -27,6 +27,10 @@ public class CartController {
 		return service.get(userId(auth));
 	}
 
+    public record MergeRequest(@jakarta.validation.constraints.NotEmpty @jakarta.validation.constraints.Size(max=100) java.util.Map<@jakarta.validation.constraints.NotNull @Positive Long,@jakarta.validation.constraints.NotNull @Positive Integer> items){}
+    @PostMapping("/merge")
+    public CartResponse merge(Authentication auth,@RequestHeader("Idempotency-Key") @jakarta.validation.constraints.Pattern(regexp="[A-Za-z0-9_-]{8,128}") String key,@Valid @RequestBody MergeRequest request){return service.merge(userId(auth),key,request.items());}
+
 	@PostMapping("/items")
 	public CartResponse add(Authentication auth, @Valid @RequestBody AddItem request) {
 		return service.add(userId(auth), request.productId(), request.quantity());

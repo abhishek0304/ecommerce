@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,6 +97,15 @@ class CartApiTests {
         mvc.perform(get("/api/cart").header("Authorization", token(1))).andExpect(jsonPath("$.totalQuantity").value(2));
         mvc.perform(delete("/api/cart").header("Authorization", token(1))).andExpect(status().isNoContent());
         mvc.perform(get("/api/cart").header("Authorization", token(1))).andExpect(jsonPath("$.items").isEmpty());
+    }
+
+    @Test void guestMergeIsAtomicIdempotentAndUserScoped()throws Exception {
+        String key=UUID.randomUUID().toString();addItem(1,1,1);
+        for(int retry=0;retry<2;retry++)mvc.perform(post("/api/cart/merge").header("Authorization",token(1)).header("Idempotency-Key",key).contentType(MediaType.APPLICATION_JSON).content("{\"items\":{\"1\":2,\"2\":1}}")).andExpect(status().isOk()).andExpect(jsonPath("$.totalQuantity").value(4));
+        mvc.perform(post("/api/cart/merge").header("Authorization",token(1)).header("Idempotency-Key",key).contentType(MediaType.APPLICATION_JSON).content("{\"items\":{\"1\":1}}")).andExpect(status().isConflict());
+        mvc.perform(post("/api/cart/merge").header("Authorization",token(2)).header("Idempotency-Key",key).contentType(MediaType.APPLICATION_JSON).content("{\"items\":{\"1\":2,\"2\":1}}")).andExpect(status().isOk()).andExpect(jsonPath("$.totalQuantity").value(3));
+        mvc.perform(post("/api/cart/merge").header("Authorization",token(1)).header("Idempotency-Key",UUID.randomUUID().toString()).contentType(MediaType.APPLICATION_JSON).content("{\"items\":{\"1\":1,\"2\":100}}")).andExpect(status().isConflict());
+        mvc.perform(get("/api/cart").header("Authorization",token(1))).andExpect(jsonPath("$.totalQuantity").value(4));
     }
 
     @Test void eachUserCanOnlyAccessTheirOwnCart() throws Exception {

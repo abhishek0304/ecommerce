@@ -24,6 +24,9 @@ public class PurchaseOrder {
     @Column(precision = 19, scale = 2) public BigDecimal total;
     @Column(precision = 19, scale = 2) public BigDecimal subtotal;
     @Column(precision = 19, scale = 2) public BigDecimal discount;
+    @Column(nullable=false,precision=19,scale=2) public BigDecimal deliveryFee=BigDecimal.ZERO;
+    public Integer deliveryMinDays;
+    public Integer deliveryMaxDays;
     @Column(length = 40) public String couponCode;
     @Column(columnDefinition = "boolean default false") public boolean couponRedeemed;
     public String returnStatus;

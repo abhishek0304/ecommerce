@@ -31,7 +31,7 @@ class SchemaMigrationTest {
  }
  void verify(String url,String user,String pass) throws Exception {
   var flyway=Flyway.configure().dataSource(url,user,pass).cleanDisabled(true).baselineOnMigrate(false).load();
-  assertEquals(2,flyway.migrate().migrationsExecuted);
+  assertEquals(3,flyway.migrate().migrationsExecuted);
   try(var c=DriverManager.getConnection(url,user,pass);var s=c.createStatement()) {
    s.execute("CREATE TABLE migration_probe (id BIGINT PRIMARY KEY, value_text VARCHAR(100))");
    s.execute("INSERT INTO migration_probe VALUES (1, 'retained')");

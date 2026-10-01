@@ -1,0 +1,7 @@
+import React,{useState} from 'react';
+export function Form({fields,onSubmit,submit='Save',busy,initial={},children}){
+  const [saved,setSaved]=useState(false);
+  return <form className="feature-form" onChange={()=>setSaved(false)} onSubmit={async e=>{e.preventDefault();setSaved(false);const body=Object.fromEntries(new FormData(e.currentTarget));if(await onSubmit(body)===true)setSaved(true);}}>
+    {fields.map(f=><label key={f.name}>{f.label || f.name}{f.options?<select name={f.name} defaultValue={initial[f.name]??f.defaultValue} required={f.required!==false}>{f.options.map(o=><option key={typeof o==='string'?o:o.value} value={typeof o==='string'?o:o.value}>{typeof o==='string'?o:o.label}</option>)}</select>:f.type==='textarea'?<textarea name={f.name} defaultValue={initial[f.name]||''} maxLength={f.maxLength||2000} required={f.required!==false}/>:<input name={f.name} type={f.type||'text'} min={f.min} max={f.max} step={f.step} pattern={f.pattern} maxLength={f.maxLength} defaultValue={initial[f.name]??f.defaultValue??''} required={f.required!==false} autoComplete={f.autoComplete}/> }</label>)}{children}<button className="primary" disabled={busy}>{busy?'Please wait…':submit}</button>{saved&&<p className="form-success" role="status">Saved successfully.</p>}</form>;
+}
+export const addressFields=[{name:'line1',label:'Street address'},{name:'line2',label:'Apartment or suite',required:false},{name:'city',label:'City'},{name:'state',label:'State'},{name:'postalCode',label:'Postal code'},{name:'country',label:'Country',defaultValue:'India'}];

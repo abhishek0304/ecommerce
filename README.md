@@ -10,6 +10,8 @@ Import the [collection](docs/postman/Ecommerce.postman_collection.json) and [loc
 
 ## Customer storefront and admin dashboard
 
+The React storefront and admin dashboard are in [frontend](frontend/README.md). Run `npm install` and `npm run dev` there, then open `http://localhost:5173`. Requests are proxied to the gateway at port 8081. See the [feature guide](docs/ECOMMERCE-FEATURES.md) for wishlists, reviews, payments, variants, delivery rules, inventory, guest-cart merging, support and analytics, including the new migrations. See the [build and startup guide](docs/ECOMMERCE-BUILD-AND-STARTUP-GUIDE.md) for service startup order.
+
 Open `http://localhost:8081/index.html` after starting the services. Product discovery and images, customer shopping pages, an admin dashboard, verified reviews, wishlists, coupons, and full-order returns are available. See [commerce setup, endpoints, and business rules](COMMERCE.md).
 
 Requires JDK 21 or later. Maven is provided by the wrapper.

@@ -41,6 +41,7 @@ class OrderApiTests {
     static final HttpServer server = start();
     @Autowired MockMvc mvc;
     @Autowired OrderRepository orders;
+    @Autowired com.ecommerce.order_service.commerce.DeliveryRepository deliveryRules;
     @Autowired OrderService service;
     @Autowired com.ecommerce.order_service.events.OutboxRepository outbox;
     @Autowired org.springframework.transaction.PlatformTransactionManager transactions;
@@ -188,6 +189,18 @@ class OrderApiTests {
         assertThat(retry.path("id")).isEqualTo(first.path("id"));
         assertThat(orders.count()).isEqualTo(1); assertThat(reserveEffects.get()).isEqualTo(1);
         assertThat(providerCreates.get()).isZero();
+    }
+
+    @Test void deliveryFeesAreSnapshottedAndAttemptLookupIsOwned() throws Exception {
+        var rule=new com.ecommerce.order_service.commerce.DeliveryRule();rule.postalPrefix="411";rule.fee=new java.math.BigDecimal("5");rule.freeAbove=new java.math.BigDecimal("100");rule.minDays=2;rule.maxDays=4;deliveryRules.saveAndFlush(rule);
+        try {
+            var first=body(checkout("delivery-001","CASH_ON_DELIVERY",1).andExpect(status().isOk()));
+            assertThat(first.path("totalPrice").decimalValue()).isEqualByComparingTo("26");assertThat(first.path("subtotal").decimalValue()).isEqualByComparingTo("21");assertThat(first.path("deliveryFee").decimalValue()).isEqualByComparingTo("5");
+            rule.fee=new java.math.BigDecimal("50");deliveryRules.saveAndFlush(rule);
+            checkout("delivery-001","CASH_ON_DELIVERY",1).andExpect(jsonPath("$.totalPrice").value(26));
+            mvc.perform(get("/api/orders/attempts/delivery-001").header("Authorization",token(1))).andExpect(status().isOk()).andExpect(jsonPath("$.id").value(first.path("id").asText()));
+            mvc.perform(get("/api/orders/attempts/delivery-001").header("Authorization",token(2))).andExpect(status().isNotFound());
+        } finally {deliveryRules.deleteAll();}
     }
     @Test void concurrentIdenticalRequestsCreateOneOrder() throws Exception {
         try (var pool = Executors.newFixedThreadPool(2)) {

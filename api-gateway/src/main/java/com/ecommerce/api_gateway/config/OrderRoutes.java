@@ -10,6 +10,7 @@ public class OrderRoutes {
             @Value("${order-service.uri:lb://order-service}") String uri) {
         return builder.routes().route("order-api", r ->
                 r.path("/api/orders", "/api/orders/**", "/api/admin/orders", "/api/admin/orders/**", "/api/payments/razorpay/webhook",
-                        "/api/reviews/**", "/api/wishlist", "/api/wishlist/**", "/api/coupons/**", "/api/admin/coupons", "/api/admin/coupons/**").uri(uri)).build();
+                        "/api/reviews/**", "/api/wishlist", "/api/wishlist/**", "/api/coupons/**", "/api/admin/coupons", "/api/admin/coupons/**",
+                        "/api/delivery/**", "/api/admin/delivery", "/api/admin/analytics", "/api/support", "/api/support/**", "/api/admin/support", "/api/admin/support/**").uri(uri)).build();
     }
 }

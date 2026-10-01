@@ -12,3 +12,4 @@ infra/k8s/secrets.env
 
 .tools/
 .backups/
+api-gateway/src/main/resources/static/react/

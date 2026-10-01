@@ -35,5 +35,6 @@ public final class OrderDtos {
             List<Item> items, BigDecimal totalPrice, String currency, JsonNode shippingAddress,
             boolean cartCleared, String failureReason, PaymentCheckout checkout, Instant createdAt, Instant expiresAt, RefundView refund,
             String carrier, String trackingNumber, Instant shippedAt, Instant deliveredAt,
-            BigDecimal subtotal, BigDecimal discount, String couponCode, ReturnView returnRequest) {}
+            BigDecimal subtotal, BigDecimal discount, String couponCode, ReturnView returnRequest,
+            BigDecimal deliveryFee,Integer deliveryMinDays,Integer deliveryMaxDays) {}
 }

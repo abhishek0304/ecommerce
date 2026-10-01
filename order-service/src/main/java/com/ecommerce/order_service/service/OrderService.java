@@ -32,9 +32,11 @@ public class OrderService {
     private final OrderLifecycle lifecycle;
     private final com.ecommerce.order_service.commerce.CouponService coupons;
     private final com.ecommerce.order_service.events.OrderEvents events;
+    private final com.ecommerce.order_service.commerce.DeliveryService delivery;
     public OrderService(OrderRepository orders, ServiceClients services, RazorpayClient razorpay,
             ObjectMapper json, PlatformTransactionManager transactions, OrderLifecycle lifecycle, com.ecommerce.order_service.events.OrderEvents events,
-            com.ecommerce.order_service.commerce.CouponService coupons) {
+            com.ecommerce.order_service.commerce.CouponService coupons,com.ecommerce.order_service.commerce.DeliveryService delivery) {
+        this.delivery=delivery;
         this.orders = orders; this.services = services; this.razorpay = razorpay; this.json = json;
         tx = new TransactionTemplate(transactions);
         this.lifecycle = lifecycle; this.events = events;
@@ -81,6 +83,7 @@ public class OrderService {
     }
 
     public OrderView get(String id, Long userId) { return view(owned(id, userId)); }
+    public OrderView attempt(Long userId,String key){return orders.findByUserIdAndKeyHash(userId,hash(key)).map(this::view).orElseThrow(()->new ResponseStatusException(HttpStatus.NOT_FOUND,"No persisted order found for this attempt. Retry checkout with the same key and details."));}
     public Page<OrderView> adminList(int page, int size) { return orders.findAll(PageRequest.of(page, size, Sort.by("createdAt").descending())).map(this::view); }
     public OrderView adminGet(String id) { return view(lifecycle.find(id)); }
     public Page<OrderView> list(Long userId, int page, int size) {
@@ -116,6 +119,9 @@ public class OrderService {
                     return;
                 }
                 order.status = order.paymentMethod.equals("CASH_ON_DELIVERY") ? "CONFIRMED" : "RESERVED";
+                var quote=delivery.quote(readTree(order.addressJson).path("postalCode").asText(),order.subtotal);
+                order.deliveryFee=quote.fee();order.deliveryMinDays=quote.minDays();order.deliveryMaxDays=quote.maxDays();
+                order.total=order.total.add(order.deliveryFee);
                 if (order.status.equals("CONFIRMED")) events.record(order, "OrderConfirmed");
             });
         });
@@ -289,7 +295,8 @@ public class OrderService {
                 order.carrier, order.trackingNumber, order.shippedAt, order.deliveredAt,
                 order.subtotal == null ? order.total : order.subtotal, order.discount == null ? BigDecimal.ZERO : order.discount, order.couponCode,
                 new ReturnView(order.returnStatus == null ? "NONE" : order.returnStatus, order.returnReason, order.returnDecisionNote,
-                        order.returnRequestedAt, order.returnReceivedAt, order.returnRestock, order.manualRefundReference));
+                        order.returnRequestedAt, order.returnReceivedAt, order.returnRestock, order.manualRefundReference),
+                order.deliveryFee,order.deliveryMinDays,order.deliveryMaxDays);
     }
     private Map<Long, Integer> quantities(PurchaseOrder order) { return decode(order.cartJson, new TypeReference<Map<Long, Integer>>() {}); }
     private String encode(Object value) {

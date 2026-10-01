@@ -5,6 +5,7 @@ import org.springframework.data.domain.*;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 public interface OrderRepository extends JpaRepository<PurchaseOrder, String> {
+    Page<PurchaseOrder> findByCreatedAtGreaterThanEqual(java.time.Instant since, Pageable pageable);
     Optional<PurchaseOrder> findByUserIdAndKeyHash(Long userId, String keyHash);
     Optional<PurchaseOrder> findByRazorpayOrderId(String razorpayOrderId);
     Optional<PurchaseOrder> findByRazorpayPaymentId(String razorpayPaymentId);

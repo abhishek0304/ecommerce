@@ -40,6 +40,9 @@ public class OrderController {
 		return service.get(id.toString(), user(auth));
 	}
 
+    @GetMapping("/attempts/{key}")
+    public OrderView attempt(Authentication auth,@PathVariable @Pattern(regexp="[A-Za-z0-9_-]{8,128}") String key){return service.attempt(user(auth),key);}
+
 	@PostMapping("/{id}/cancel")
 	public ResponseEntity<OrderView> cancel(Authentication auth, @PathVariable UUID id) {
 		return response(service.cancel(id.toString(), user(auth)));

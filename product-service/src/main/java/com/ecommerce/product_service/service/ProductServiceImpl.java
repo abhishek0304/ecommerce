@@ -18,8 +18,11 @@ public class ProductServiceImpl implements ProductService {
 	private final ProductRepository productRepository;
     private final com.ecommerce.product_service.config.ProductReadCache cache;
     private final com.ecommerce.product_service.inventory.ReservationRepository reservations;
+    private final com.ecommerce.product_service.inventory.StockLedger ledger;
+    private final com.ecommerce.product_service.catalog.VariantRepository variants;
 
-	public ProductServiceImpl(ProductRepository productRepository, com.ecommerce.product_service.inventory.ReservationRepository reservations, com.ecommerce.product_service.config.ProductReadCache cache) {
+	public ProductServiceImpl(ProductRepository productRepository, com.ecommerce.product_service.inventory.ReservationRepository reservations, com.ecommerce.product_service.config.ProductReadCache cache, com.ecommerce.product_service.inventory.StockLedger ledger, com.ecommerce.product_service.catalog.VariantRepository variants) {
+        this.ledger=ledger; this.variants=variants;
         this.cache = cache;
 		this.productRepository = productRepository;
         this.reservations = reservations;
@@ -33,7 +36,9 @@ public class ProductServiceImpl implements ProductService {
 			throw new DuplicateResourceException("A product with sku '" + sku + "' already exists");
 		Product product = new Product();
 		apply(request, product, sku);
-		return toResponse(productRepository.save(product));
+		productRepository.saveAndFlush(product);
+        ledger.record(product.getId(),product.getStockQuantity(),product.getStockQuantity(),"CREATED",sku);
+        return toResponse(product);
 	}
 
 	@Override
@@ -50,11 +55,13 @@ public class ProductServiceImpl implements ProductService {
 	@Override
 	@Transactional
 	public ProductResponse updateProduct(Long id, ProductRequest request) {
-		Product product = findById(id);
+		Product product = productRepository.findLocked(id).orElseThrow(() -> new ProductNotFoundException(id));
+        int previousStock=product.getStockQuantity();
 		String sku = normalizedSku(request.sku());
 		if (productRepository.existsBySkuAndIdNot(sku, id))
 			throw new DuplicateResourceException("A product with sku '" + sku + "' already exists");
 		apply(request, product, sku);
+        ledger.record(id,product.getStockQuantity()-previousStock,product.getStockQuantity(),"ADMIN_EDIT",sku);
 		return toResponse(productRepository.save(product));
 	}
 
@@ -63,6 +70,7 @@ public class ProductServiceImpl implements ProductService {
 	public void deleteProduct(Long id) {
 		var product = productRepository.findLocked(id).orElseThrow(() -> new ProductNotFoundException(id));
         if (reservations.hasReservation(id)) throw new DuplicateResourceException("Product has reserved or fulfilled stock and cannot be deleted; hide it instead so returns can be restocked");
+        if (variants.existsByParentId(id) || variants.findByProductId(id).isPresent()) throw new DuplicateResourceException("Products with variants must be hidden instead of deleted");
         productRepository.delete(product);
 	}
 

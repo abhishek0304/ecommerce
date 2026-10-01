@@ -12,7 +12,9 @@ import org.springframework.web.server.ResponseStatusException;
 public class InventoryService {
     private final ProductRepository products;
     private final ReservationRepository reservations;
-    public InventoryService(ProductRepository products, ReservationRepository reservations) {
+    private final StockLedger ledger;
+    public InventoryService(ProductRepository products, ReservationRepository reservations, StockLedger ledger) {
+        this.ledger=ledger;
         this.products = products; this.reservations = reservations;
     }
     public record Request(@NotNull @Positive Long userId,
@@ -40,6 +42,7 @@ public class InventoryService {
                 throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "A product is inactive or has insufficient stock");
             r.items.add(new ReservationLine(product.getId(), product.getName(), product.getPrice(), entry.getValue()));
             product.setStockQuantity(product.getStockQuantity() - entry.getValue());
+            ledger.record(product.getId(),-entry.getValue(),product.getStockQuantity(),"RESERVATION",id);
         }
         products.flush();
         reservations.flush();
@@ -57,6 +60,7 @@ public class InventoryService {
             long restored = (long) product.getStockQuantity() + item.quantity;
             if (restored > Integer.MAX_VALUE) throw new ResponseStatusException(HttpStatus.CONFLICT, "Stock exceeds supported quantity");
             product.setStockQuantity((int) restored);
+            ledger.record(product.getId(),item.quantity,product.getStockQuantity(),"RELEASE",id);
         }
         r.state = "RELEASED";
     }
@@ -77,6 +81,7 @@ public class InventoryService {
             long quantity = (long) p.getStockQuantity() + item.quantity;
             if (quantity > Integer.MAX_VALUE) throw new ResponseStatusException(HttpStatus.CONFLICT, "Stock exceeds supported quantity");
             p.setStockQuantity((int) quantity);
+            ledger.record(p.getId(),item.quantity,p.getStockQuantity(),"RETURN",id);
         }
         r.state = target;
     }

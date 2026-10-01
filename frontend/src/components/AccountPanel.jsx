@@ -1,0 +1,19 @@
+import React,{useEffect,useState} from 'react';
+import {api,saveSession,readSession} from '../api';
+import {Form,addressFields} from './Forms';
+export function PasswordRecovery({action,busy}){
+  const [sent,setSent]=useState(false);
+  const [done,setDone]=useState(false);
+  return <section><h3>Reset your password</h3><p className="muted">Request a code, then enter the code delivered to your email.</p>{done&&<p className="form-success" role="status">Password reset. Close this dialog and sign in with your new password.</p>}{!sent?<Form fields={[{name:'email',label:'Email',type:'email'}]} busy={busy} submit="Send reset code" onSubmit={body=>action(async()=>{await api('/api/auth/forgot-password',{method:'POST',body});setSent(true);})}/>:<Form fields={[{name:'email',label:'Email',type:'email'},{name:'otp',label:'Reset code'},{name:'newPassword',label:'New password',type:'password',min:8,maxLength:100}]} busy={busy} submit="Reset password" onSubmit={body=>action(async()=>{if(body.newPassword.length<8)throw new Error('Use at least 8 characters');await api('/api/auth/reset-password',{method:'POST',body});setSent(false);setDone(true);})}/>}</section>;
+}
+export default function AccountPanel({session,action,busy,onOrders,onAdmin,onLogout}){
+  const [tab,setTab]=useState('profile');const [addresses,setAddresses]=useState([]);const [editing,setEditing]=useState(null);
+  async function reload(){setAddresses(await api('/api/addresses'));}
+  useEffect(()=>{action(reload);},[]);
+  return <><div className="tabs">{['profile','addresses','password'].map(t=><button key={t} className={tab===t?'selected':''} onClick={()=>setTab(t)}>{t}</button>)}</div>
+    {tab==='profile'&&<><p>{session.user.email}</p><Form initial={session.user} busy={busy} fields={[{name:'name',label:'Your name',maxLength:100},{name:'phone',label:'Phone',type:'tel',pattern:'[+]?[0-9]{7,15}'},{name:'dob',label:'Date of birth',type:'date',required:false},{name:'gender',label:'Gender',required:false}]} onSubmit={body=>action(async()=>{if(!body.dob)body.dob=null;const user=await api('/api/users/me',{method:'PUT',body});saveSession({...readSession(),user});})}/></>}
+    {tab==='addresses'&&<><div className="address-list">{addresses.map(a=><article key={a.id}><strong>{a.line1}{a.defaultAddress?' · Default':''}</strong><p>{a.line2} {a.city}, {a.state} {a.postalCode} · {a.country}</p><div className="row-actions"><button disabled={busy} onClick={()=>setEditing(a)}>Edit</button><button disabled={busy||a.defaultAddress} onClick={()=>action(async()=>{await api(`/api/addresses/${a.id}/default`,{method:'PATCH'});await reload();})}>Make default</button><button disabled={busy} onClick={()=>action(async()=>{await api(`/api/addresses/${a.id}`,{method:'DELETE'});await reload();})}>Delete</button></div></article>)}</div><h3>{editing?'Edit address':'Add address'}</h3><Form key={editing?.id||'new'} fields={addressFields} initial={editing||{}} busy={busy} onSubmit={body=>action(async()=>{await api(editing?`/api/addresses/${editing.id}`:'/api/addresses',{method:editing?'PUT':'POST',body});setEditing(null);await reload();})}/>{editing&&<button onClick={()=>setEditing(null)}>Cancel editing</button>}</>}
+    {tab==='password'&&<Form fields={[{name:'oldPassword',label:'Current password',type:'password'},{name:'newPassword',label:'New password',type:'password',maxLength:100}]} busy={busy} submit="Change password" onSubmit={body=>action(async()=>{if(body.newPassword.length<8)throw new Error('Use at least 8 characters');await api('/api/users/change-password',{method:'PUT',body});})}/>}
+    <div className="row-actions"><button onClick={onOrders}>My orders</button>{session.user.roles?.includes('ROLE_ADMIN')&&<button onClick={onAdmin}>Admin dashboard</button>}<button disabled={busy} onClick={onLogout}>Sign out</button></div>
+  </>;
+}
